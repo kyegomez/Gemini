@@ -1,0 +1,19 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "geminiX"
+version = "0.0.1"
+description = "Gemini - Pytorch"
+authors = ["Kye Gomez <kye@apac.ai>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/kyegomez/Gemini"
+keywords = ["artificial intelligence", "attention mechanism", "transformers"]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+torch = "*"
+
+[tool.poetry.dev-dependencies]
