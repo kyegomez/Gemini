@@ -11,4 +11,5 @@ The open source implementation of Gemini, the model that will "eclipse ChatGPT",
 * PPO? or MPO
 * get good at backtracking and exploring alternative paths
 * speculative decoding
-*
+* Algorithm of Thoughts
+* RLHF
