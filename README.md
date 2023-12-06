@@ -17,6 +17,11 @@ Codi also has conditional generation leverages the tokenized outputs.
 To implement this, I plan to cover the img embedding first make sure that works well and then go onto the audio embeddings and then the video.
 
 
+# Install
+`pip3 install gemini-torch`
+
+
+## Usage
 
 
 
@@ -35,3 +40,5 @@ To implement this, I plan to cover the img embedding first make sure that works 
 
 # Todo
 - [ ] Implement the img feature embedder and align imgs with text and pass into transformer
+- [ ] Implement the audio processing by making an audio processor that intakes in audio embeddings and reshapes it to match language embeddings dimension shape [B, SEQLEN, Dim]
+- [ ] Do the same for video

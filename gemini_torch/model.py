@@ -2,7 +2,7 @@ import torch
 from torch.nn import Module
 from zeta.structs import AutoregressiveWrapper
 
-from geminix.transformer import Decoder, Transformer
+from gemini_torch.transformer import Decoder, Transformer
 
 
 class Gemini(Module):

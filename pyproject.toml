@@ -3,17 +3,50 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "geminiX"
+name = "gemini-torch"
 version = "0.0.1"
 description = "Gemini - Pytorch"
-authors = ["Kye Gomez <kye@apac.ai>"]
 license = "MIT"
-readme = "README.md"
+authors = ["Kye Gomez <kye@apac.ai>"]
 homepage = "https://github.com/kyegomez/Gemini"
-keywords = ["artificial intelligence", "attention mechanism", "transformers"]
+documentation = "https://github.com/kyegomez/Gemini"  # Add this if you have documentation.
+readme = "README.md"  # Assuming you have a README.md
+repository = "https://github.com/kyegomez/Gemini"
+keywords = ["artificial intelligence", "deep learning", "optimizers", "Prompt Engineering"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.9"
+]
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.9"
+zetascale = "*"
 torch = "*"
+einops = "*"
+torchvision = "*"
+
+
 
 [tool.poetry.dev-dependencies]
+# Add development dependencies here
+
+
+[tool.poetry.group.lint.dependencies]
+ruff = "^0.1.6"
+types-toml = "^0.10.8.1"
+types-redis = "^4.3.21.6"
+types-pytz = "^2023.3.0.0"
+black = "^23.1.0"
+types-chardet = "^5.0.4.6"
+mypy-protobuf = "^3.0.0"
+
+
+[tool.autopep8]
+max_line_length = 120
+ignore = "E501,W6"  # or ["E501", "W6"]
+in-place = true
+recursive = true
+aggressive = 3

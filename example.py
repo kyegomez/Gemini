@@ -1,5 +1,5 @@
 import torch 
-from geminix.model import Gemini
+from gemini_torch.model import Gemini
 
 model = Gemini(
     num_tokens=50432,

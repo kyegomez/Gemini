@@ -7,7 +7,6 @@ from typing import Callable, List, Optional
 
 import torch
 import torch.nn.functional as F
-import zeta.nn as znn
 from einops import rearrange, reduce, repeat
 from torch import Tensor, einsum, nn
 from zeta.nn.attention.attend import Attend, Intermediates
