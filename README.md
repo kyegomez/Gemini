@@ -6,16 +6,13 @@
 
 The open source implementation of Gemini, the model that will "eclipse ChatGPT", it seems to work by directly taking in all modalities without an encoder for some kind which means that the encoding is built into the modal.
 
-input sequences {texts, audio, imgs, video} -> [tokens] -> transformer -> conditional decoding for img gen
+The input sequences for Gemini consist of texts, audio, images, and videos. These inputs are transformed into tokens, which are then processed by a transformer. Subsequently, conditional decoding takes place to generate image outputs.
 
-This architecture looks very similiar to Fuyu's architecture just extended to many modalities, where instead of an vit encoder you just pass in the img embeddings into the transformer.
+Interestingly, the architecture of Gemini bears resemblance to Fuyu's architecture but is expanded to encompass multiple modalities. Instead of utilizing a visual transformer (vit) encoder, Gemini simply feeds image embeddings directly into the transformer.
 
-The token inputs to gemini will most likely be denoted by special modality tokens `[IMG] or <img> or [AUDIO] or <audio>`
+For Gemini, the token inputs will likely be indicated by special modality tokens such as [IMG], <img>, [AUDIO], or <audio>. Codi, a component of Gemini, also employs conditional generation and makes use of the tokenized outputs.
 
-Codi also has conditional generation leverages the tokenized outputs.
-
-To implement this, I plan to cover the img embedding first make sure that works well and then go onto the audio embeddings and then the video.
-
+To implement this model effectively, I intend to initially focus on the image embeddings to ensure their smooth integration. Subsequently, I will proceed with incorporating audio embeddings and then video embeddings.
 
 # Install
 `pip3 install gemini-torch`
@@ -67,7 +64,7 @@ print(y)
 --------
 
 ### Multi-Modal with Imgs
-- Processes Img natively no encoders, we can definitely optimize this like Fuyu
+- Img processing through a specially crafted module that takes in img -> patches it -> then reshapes to the shape of the text tensors, [B, seqlen, dim] -> align with text tokens
 
 ```python
 import torch
