@@ -2,6 +2,7 @@ import torch
 import unittest
 from gemini_torch.utils import ImgToTransformer
 
+
 class TestImgToTransformer(unittest.TestCase):
     def setUp(self):
         self.model = ImgToTransformer(
@@ -10,7 +11,7 @@ class TestImgToTransformer(unittest.TestCase):
             transformer_dim=512,
             img_channels=3,
             seq_len=128,
-            reduced_dim=128
+            reduced_dim=128,
         )
 
     def test_initialization(self):
@@ -40,5 +41,6 @@ class TestImgToTransformer(unittest.TestCase):
         self.assertIsInstance(output, torch.Tensor)
         self.assertEqual(output.shape, (1, 128, 128))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

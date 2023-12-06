@@ -54,6 +54,9 @@ class Gemini(Module):
         qk_norm=True,
         attn_qk_norm=True,
         attn_qk_norm_dim_scale=True,
+        patches: int = 16,
+        patch_size: int = 16,
+        img_channels: int = 3,
         *args,
         **kwargs
     ):
@@ -88,10 +91,10 @@ class Gemini(Module):
 
             # Takes in imgs -> patches them -> transforms them to the same dimension as the model
             self.img_to_transformer = ImgToTransformer(
-                patches=16,
-                patch_size=16,
+                patches=patches,
+                patch_size=patch_size,
                 transformer_dim=dim,
-                img_channels=3,
+                img_channels=img_channels,
                 seq_len=num_tokens,
                 reduced_dim=dim,
                 *args,
