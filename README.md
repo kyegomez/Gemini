@@ -22,7 +22,11 @@ To implement this, I plan to cover the img embedding first make sure that works 
 
 
 ## Usage
+
 ### Gemini Transformer Usage
+- No multi-modal yet
+- Just language
+- Rope, xpos, alibi, etc, multi grouped queries, qk_norm
 ```python
 import torch 
 from gemini_torch import Gemini
