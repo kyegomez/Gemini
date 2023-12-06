@@ -1,4 +1,4 @@
-import torch 
+import torch
 from gemini_torch.model import Gemini
 
 # Initialize model
@@ -23,7 +23,7 @@ model = Gemini(
 # Text shape: [batch, seq_len, dim]
 text = torch.randint(0, 50432, (1, 8192))
 
-# Img shape: [batch, channels, height, width] 
+# Img shape: [batch, channels, height, width]
 img = torch.randn(1, 3, 256, 256)
 
 # Apply model to text and img

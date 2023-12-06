@@ -5,6 +5,7 @@ from zeta.structs import AutoregressiveWrapper
 from gemini_torch.transformer import Decoder, Transformer
 from gemini_torch.utils import ImgToTransformer
 
+
 def exists(val):
     return val is not None
 
@@ -12,8 +13,8 @@ def exists(val):
 class Gemini(Module):
     """
     Gemini model class.
-    
-    
+
+
     Args:
     - num_tokens: Number of tokens in the vocabulary
     - max_seq_len: Maximum sequence length
@@ -33,13 +34,13 @@ class Gemini(Module):
     - attn_qk_norm: Attention query-key normalization
     - attn_qk_norm_dim_scale: Attention query-key normalization dimension scale
     - embedding_provider: Embedding provider module
-    
+
     """
 
     def __init__(
         self,
         num_tokens=50432,
-        max_seq_len=8192,
+        max_seq_len=32052,
         dim=2560,
         depth=32,
         dim_head=128,
@@ -80,14 +81,14 @@ class Gemini(Module):
             )
 
             self.decoder = AutoregressiveWrapper(self.gemini)
-            
+
             self.img_to_transformer = ImgToTransformer(
                 patches=16,
                 patch_size=16,
                 transformer_dim=dim,
                 img_channels=3,
                 seq_len=num_tokens,
-                reduced_dim=dim
+                reduced_dim=dim,
             )
 
         except Exception as e:
@@ -97,20 +98,20 @@ class Gemini(Module):
     def forward(self, text: torch.Tensor, img: torch.Tensor = None, *args, **kwargs):
         """
         Forward pass of the model.
-        
+
         Args:
         - text: Text tensor
         - img: Image tensor
-        
+
         Returns:
         - torch.Tensor: The output of the model
-        
+
         Text input shape: [batch, seq_len, dim]
         img input shape: [batch, channels, height, width]
-        
+
         Output shape: [batch, seq_len, dim]
-        
-        
+
+
         """
         try:
             if exists(img):

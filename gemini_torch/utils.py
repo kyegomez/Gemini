@@ -128,7 +128,9 @@ img_channels = 3
 seq_len = 50000
 reduced_dim = 256  # Reduced dimension after dimensionality reduction
 
-model = ImgToTransformer(num_patches, patch_size, transformer_dim, img_channels, seq_len, reduced_dim)
+model = ImgToTransformer(
+    num_patches, patch_size, transformer_dim, img_channels, seq_len, reduced_dim
+)
 
 # Dummy image input [BATCH, CHANNELS, HEIGHT, WIDTH]
 dummy_img = torch.randn(1, 3, 64, 64)  # Batch size of 1, 64x64 RGB image
