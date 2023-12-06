@@ -24,9 +24,14 @@ To implement this, I plan to cover the img embedding first make sure that works 
 ## Usage
 
 ### Gemini Transformer Usage
-- No multi-modal yet
-- Just language
-- Rope, xpos, alibi, etc, multi grouped queries, qk_norm
+- Base transformer
+- Multi Grouped Query Attn / flash attn
+- rope
+- alibi
+- xpos
+- qk norm
+- no pos embeds
+- kv cache
 ```python
 import torch 
 from gemini_torch import Gemini
