@@ -60,6 +60,7 @@ class Gemini(Module):
         super().__init__()
 
         try:
+            # Transformer model for the model
             self.gemini = Transformer(
                 num_tokens=num_tokens,
                 max_seq_len=max_seq_len,
@@ -77,11 +78,16 @@ class Gemini(Module):
                     qk_norm=qk_norm,
                     attn_qk_norm=attn_qk_norm,
                     attn_qk_norm_dim_scale=attn_qk_norm_dim_scale,
+                    *args,
+                    **kwargs
                 ),
             )
-
+            
+            # Autoregressive wrapper for the model
             self.decoder = AutoregressiveWrapper(self.gemini)
 
+            
+            # Takes in imgs -> patches them -> transforms them to the same dimension as the model
             self.img_to_transformer = ImgToTransformer(
                 patches=16,
                 patch_size=16,
@@ -89,6 +95,8 @@ class Gemini(Module):
                 img_channels=3,
                 seq_len=num_tokens,
                 reduced_dim=dim,
+                *args,
+                **kwargs
             )
 
         except Exception as e:
@@ -114,9 +122,11 @@ class Gemini(Module):
 
         """
         try:
+            # If image is provided, concat it with the text
             if exists(img):
                 x = torch.concat((text, img), dim=1)
                 model_input = self.decoder.forward(x)[0]
+            # Else, just use the text
             else:
                 model_input = self.decoder.forward(text)[0]
             return self.decoder(model_input, padded_x=model_input[0])

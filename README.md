@@ -62,7 +62,8 @@ print(y)
 --------
 
 ### Multi-Modal with Imgs
-- Processes Img soon with audio,
+- Processes Img natively no encoders, we can definitely optimize this like Fuyu
+
 ```python
 import torch
 from gemini_torch.model import Gemini
