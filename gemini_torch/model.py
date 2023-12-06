@@ -3,6 +3,10 @@ from torch.nn import Module
 from zeta.structs import AutoregressiveWrapper
 
 from gemini_torch.transformer import Decoder, Transformer
+from gemini_torch.utils import ImgToTransformer
+
+def exists(val):
+    return val is not None
 
 
 class Gemini(Module):
@@ -76,6 +80,15 @@ class Gemini(Module):
             )
 
             self.decoder = AutoregressiveWrapper(self.gemini)
+            
+            self.img_to_transformer = ImgToTransformer(
+                patches=16,
+                patch_size=16,
+                transformer_dim=dim,
+                img_channels=3,
+                seq_len=num_tokens,
+                reduced_dim=dim
+            )
 
         except Exception as e:
             print("Failed to initialize gemini: ", e)
@@ -83,15 +96,28 @@ class Gemini(Module):
 
     def forward(self, text: torch.Tensor, img: torch.Tensor = None, *args, **kwargs):
         """
-        Forward pass through the model. It expects the input text_tokens.
+        Forward pass of the model.
+        
         Args:
-        - text_tokens: Input tokens
-        - kwargs: Other arguments
+        - text: Text tensor
+        - img: Image tensor
+        
         Returns:
-        - output from the decoder
+        - torch.Tensor: The output of the model
+        
+        Text input shape: [batch, seq_len, dim]
+        img input shape: [batch, channels, height, width]
+        
+        Output shape: [batch, seq_len, dim]
+        
+        
         """
         try:
-            model_input = self.decoder.forward(text)[0]
+            if exists(img):
+                x = torch.concat((text, img), dim=1)
+                model_input = self.decoder.forward(x)[0]
+            else:
+                model_input = self.decoder.forward(text)[0]
             return self.decoder(model_input, padded_x=model_input[0])
         except Exception as e:
             print("Failed in forward method: ", e)
