@@ -1,7 +1,14 @@
 [![Multi-Modality](agorabanner.png)](https://discord.gg/qUtxnK2NMf)
 
 # Gemini
-The open source implementation of Gemini, the model that will "eclipse ChatGPT", 
+
+![gemini](gemini.png)
+
+The open source implementation of Gemini, the model that will "eclipse ChatGPT", it seems to work by directly taking in all modalities without an encoder for some kind which means that the encoding is built into the modal.
+
+input sequences {texts, audio, imgs, video} -> [tokens] -> transformer -> conditional decoding for img gen
+
+
 
 
 
