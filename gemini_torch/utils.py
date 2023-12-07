@@ -181,13 +181,13 @@ class AudioToLangEmbedding(nn.Module):
         return x
 
 
-# Example usage
-audio_seq_len = 32000  # Input audio sequence length
-seqlen = 512  # Sequence length to align with the language transformer
-dim = 512  # Embedding dimension
+# # Example usage
+# audio_seq_len = 32000  # Input audio sequence length
+# seqlen = 512  # Sequence length to align with the language transformer
+# dim = 512  # Embedding dimension
 
-model = AudioToLangEmbedding(audio_seq_len, seqlen, dim)
-audio_input = torch.randn(1, audio_seq_len)  # Example input tensor
-output = model(audio_input)
+# model = AudioToLangEmbedding(audio_seq_len, seqlen, dim)
+# audio_input = torch.randn(1, audio_seq_len)  # Example input tensor
+# output = model(audio_input)
 
-print("Output shape:", output.shape)  # Should be [1, 512, 512]
+# print("Output shape:", output.shape)  # Should be [1, 512, 512]

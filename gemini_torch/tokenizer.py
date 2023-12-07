@@ -5,6 +5,7 @@ from typing import List, Optional
 
 from sentencepiece import SentencePieceProcessor
 
+
 logger = getLogger()
 
 PRETRAINED_VOCAB_FILES_MAP = {
@@ -18,8 +19,23 @@ PRETRAINED_VOCAB_FILES_MAP = {
 
 
 class MultimodalSentencePieceTokenizer:
-    """
-    A tokenizer that extends the SentencePieceTokenizer for multi-modality inputs.
+    """Multimodal SentencePiece tokenizer.
+
+    Args:
+        model_path (str, optional): Path to the SentencePiece model file. Defaults to None.
+        tokenizer_name (str, optional): Name of the tokenizer to download. Defaults to None.
+
+    Methods:
+        encode(s: str, modality: str, bos: bool = True, eos: bool = True) -> List[int]: Encodes a string into a list of token IDs.
+        decode(tokens: List[int]) -> str: Decodes a list of token IDs into a string.
+
+    Examples:
+        >>> tokenizer_name = "hf-internal-testing/llama-tokenizer"
+        >>> tokenizer = MultimodalSentencePieceTokenizer(tokenizer_name=tokenizer_name)
+        >>> encoded_audio = tokenizer.encode("Audio description", modality='audio')
+        >>> decoded_audio = tokenizer.decode(encoded_audio)
+        >>> print("Encoded audio:", encoded_audio)
+        >>> print("Decoded audio:", decoded_audio)
     """
 
     def __init__(
@@ -55,6 +71,18 @@ class MultimodalSentencePieceTokenizer:
 
     @staticmethod
     def download_tokenizer(tokenizer_name: str) -> str:
+        """Downloads the SentencePiece model file from HuggingFace Hub.
+
+        Args:
+            tokenizer_name (str): _description_
+
+        Raises:
+            ValueError: _description_
+            Exception: _description_
+
+        Returns:
+            str: _description_
+        """
         if tokenizer_name not in PRETRAINED_VOCAB_FILES_MAP["vocab_file"]:
             raise ValueError(f"Tokenizer {tokenizer_name} is not available.")
 
@@ -78,6 +106,17 @@ class MultimodalSentencePieceTokenizer:
     def encode(
         self, s: str, modality: str, bos: bool = True, eos: bool = True
     ) -> List[int]:
+        """Encodes a string into a list of token IDs.
+
+        Args:
+            s (str): _description_
+            modality (str): _description_
+            bos (bool, optional): _description_. Defaults to True.
+            eos (bool, optional): _description_. Defaults to True.
+
+        Returns:
+            List[int]: _description_
+        """
         assert isinstance(s, str)
         tokens = self.sp_model.encode(s)
 
@@ -97,6 +136,14 @@ class MultimodalSentencePieceTokenizer:
         return tokens
 
     def decode(self, tokens: List[int]) -> str:
+        """decodes a list of token IDs into a string.
+
+        Args:
+            tokens (List[int]): _description_
+
+        Returns:
+            str: _description_
+        """
         # Remove modality tokens before decoding
         for start_id, end_id in self.modality_tokens.values():
             tokens = [t for t in tokens if t not in (start_id, end_id)]
@@ -108,7 +155,7 @@ tokenizer_name = "hf-internal-testing/llama-tokenizer"
 tokenizer = MultimodalSentencePieceTokenizer(tokenizer_name=tokenizer_name)
 
 # Encoding and decoding examples
-encoded_audio = tokenizer.encode("Audio description", modality='audio')
+encoded_audio = tokenizer.encode("Audio description", modality="audio")
 decoded_audio = tokenizer.decode(encoded_audio)
 
 print("Encoded audio:", encoded_audio)
