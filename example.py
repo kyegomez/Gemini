@@ -1,6 +1,7 @@
-import torch
-from gemini_torch.model import Gemini
+import torch 
+from gemini_torch import Gemini
 
+# Initialize the model
 model = Gemini(
     num_tokens=50432,
     max_seq_len=8192,
@@ -19,7 +20,11 @@ model = Gemini(
     attn_qk_norm_dim_scale=True,
 )
 
+# Initialize the text random tokens
 x = torch.randint(0, 50432, (1, 8192))
 
+# Apply model to x
 y = model(x)
+
+# Print logits
 print(y)
