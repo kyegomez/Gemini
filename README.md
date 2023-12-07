@@ -4,7 +4,7 @@
 
 ![gemini](gemini.png)
 
-The open source implementation of Gemini, the model that will "eclipse ChatGPT", it seems to work by directly taking in all modalities without an encoder for some kind which means that the encoding is built into the modal.
+The open source implementation of Gemini, the model that will "eclipse ChatGPT", it seems to work by directly taking in all modalities all at once into a transformer with special decoders for text or img generation!
 
 The input sequences for Gemini consist of texts, audio, images, and videos. These inputs are transformed into tokens, which are then processed by a transformer. Subsequently, conditional decoding takes place to generate image outputs.
 
@@ -52,10 +52,10 @@ model = Gemini(
     attn_qk_norm_dim_scale=True,
 )
 
-# Initialize the randint
+# Initialize the text random tokens
 x = torch.randint(0, 50432, (1, 8192))
 
-# Apply model to y
+# Apply model to x
 y = model(x)
 
 # Print logits
