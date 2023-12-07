@@ -2,3 +2,4 @@ zetascale
 torch
 einops
 pytest
+sentencepiece

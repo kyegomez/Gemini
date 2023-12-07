@@ -27,6 +27,8 @@ zetascale = "*"
 torch = "*"
 einops = "*"
 torchvision = "*"
+sentencepiece = "*"
+pytest = "*"
 
 
 
