@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+from einops import rearrange
 
 
 class ImgToTransformer(nn.Module):
@@ -83,6 +84,14 @@ class ImgToTransformer(nn.Module):
         self.seq_expansion = nn.Linear(patches * reduced_dim, seq_len * reduced_dim)
 
     def forward(self, x: torch.Tensor):
+        """Forward pass
+
+        Args:
+            x (torch.Tensor): _description_
+
+        Returns:
+            _type_: _description_
+        """
         batch, channels, height, width, height = x.shape
 
         # Check if img can be evenly divided into patches
@@ -118,3 +127,66 @@ class ImgToTransformer(nn.Module):
         x = x.view(batch, self.seq_len, -1)
 
         return x
+
+
+class AudioToLangEmbedding(nn.Module):
+    """AudioToLangEmbedding
+
+    Args:
+        audio_seq_len (int): Length of the audio sequence
+        seqlen (int): Length of the sequence
+        dim (int): Embedding dimension
+        
+    Example:
+        >>> import torch
+        >>> from geminix import AudioToLangEmbedding
+        >>> model = AudioToLangEmbedding(
+        ...     audio_seq_len=32000,
+        ...     seqlen=512,
+        ...     dim=512
+        ... )
+        >>> x = torch.randn(1, 32000)
+        >>> y = model(x)
+        >>> y.shape
+        torch.Size([1, 512, 512])
+    """
+    def __init__(self, audio_seq_len, seqlen, dim):
+        super(AudioToLangEmbedding, self).__init__()
+        self.audio_seq_len = audio_seq_len
+        self.seqlen = seqlen
+        self.dim = dim
+        # Initialize a linear layer to project the 2D audio input to the desired 3D shape
+        self.projection = nn.Linear(audio_seq_len, seqlen * dim)
+
+    def forward(self, x):
+        """Forward pass
+
+        Args:
+            x (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        # x shape: [batch, audio_seq_len] - 2D input
+        batch, audio_seq_len = x.shape
+        device = x.device
+
+        # Project the audio tensor to match the seqlen and dim
+        x = self.projection(x)  # x shape: [batch, seqlen * dim]
+
+        # Reshape to the target shape: [batch, seqlen, dim]
+        x = rearrange(x, "b (s d) -> b s d", s=self.seqlen, d=self.dim)
+
+        return x
+
+
+# Example usage
+audio_seq_len = 32000  # Input audio sequence length
+seqlen = 512  # Sequence length to align with the language transformer
+dim = 512  # Embedding dimension
+
+model = AudioToLangEmbedding(audio_seq_len, seqlen, dim)
+audio_input = torch.randn(1, audio_seq_len)  # Example input tensor
+output = model(audio_input)
+
+print("Output shape:", output.shape)  # Should be [1, 512, 512]
