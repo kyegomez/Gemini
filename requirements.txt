@@ -1,3 +1,4 @@
 zetascale
 torch
 einops
+pytest
