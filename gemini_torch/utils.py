@@ -136,7 +136,7 @@ class AudioToLangEmbedding(nn.Module):
         audio_seq_len (int): Length of the audio sequence
         seqlen (int): Length of the sequence
         dim (int): Embedding dimension
-        
+
     Example:
         >>> import torch
         >>> from geminix import AudioToLangEmbedding
@@ -150,6 +150,7 @@ class AudioToLangEmbedding(nn.Module):
         >>> y.shape
         torch.Size([1, 512, 512])
     """
+
     def __init__(self, audio_seq_len, seqlen, dim):
         super(AudioToLangEmbedding, self).__init__()
         self.audio_seq_len = audio_seq_len

@@ -101,14 +101,10 @@ class Gemini(Module):
                 *args,
                 **kwargs
             )
-            
+
             # Takes in audio -> transforms it to the same dimension as the model
             self.audio_to_lang_embedding = AudioToLangEmbedding(
-                audio_seq_len=audio_seq_len,
-                seqlen=num_tokens,
-                dim=dim,
-                *args,
-                **kwargs
+                audio_seq_len=audio_seq_len, seqlen=num_tokens, dim=dim, *args, **kwargs
             )
 
         except Exception as e:
@@ -147,7 +143,7 @@ class Gemini(Module):
                 img = self.img_to_transformer(img)
                 x = torch.concat((text, img), dim=1)
                 model_input = self.decoder.forward(x)[0]
-                
+
             # Else, just use the text
             elif exists(img) and exists(audio):
                 # Concat the audio and image and text embeddings all at once, audio is [batch, audio_seq_len]
@@ -155,10 +151,10 @@ class Gemini(Module):
                 x = self.img_to_transformer(img)
                 x = torch.concat((text, img, audio), dim=1)
                 model_input = self.decoder.forward(x)[0]
-    
+
             else:
                 model_input = self.decoder.forward(text)[0]
-            
+
             return self.decoder(model_input, padded_x=model_input[0])
         except Exception as e:
             print("Failed in forward method: ", e)
