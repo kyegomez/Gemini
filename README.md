@@ -29,6 +29,7 @@ To implement this model effectively, I intend to initially focus on the image em
 - qk norm
 - no pos embeds
 - kv cache
+
 ```python
 import torch 
 from gemini_torch import Gemini
@@ -107,6 +108,29 @@ print(y.shape)
 
 ```
 ------
+
+
+
+## Tokenizer
+- We're using the same tokenizer as LLAMA with special tokens denoting the beginning and end of the multi modality tokens.
+- Does not fully process img, audio, or videos now we need help on that
+
+```python
+from gemini_torch.tokenizer import MultimodalSentencePieceTokenizer
+
+# Example usage
+tokenizer_name = "hf-internal-testing/llama-tokenizer"
+tokenizer = MultimodalSentencePieceTokenizer(tokenizer_name=tokenizer_name)
+
+# Encoding and decoding examples
+encoded_audio = tokenizer.encode("Audio description", modality="audio")
+decoded_audio = tokenizer.decode(encoded_audio)
+
+print("Encoded audio:", encoded_audio)
+print("Decoded audio:", decoded_audio)
+
+
+```
 
 ### `ImgToTransformer`
 - takes in img -> patches -> reshapes to [B, SEQLEN, Dim] to align with transformer
