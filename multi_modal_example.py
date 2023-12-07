@@ -27,7 +27,7 @@ text = torch.randint(0, 50432, (1, 8192))
 img = torch.randn(1, 3, 256, 256)
 
 # Audio shape: [batch, audio_seq_len, dim]
-audio = torch.randn(1, 128,)
+audio = torch.randn(1, 128)
 
 # Apply model to text and img
 y = model(text, img, audio)
