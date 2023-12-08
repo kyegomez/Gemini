@@ -6,6 +6,8 @@
 
 The open source implementation of Gemini, the model that will "eclipse ChatGPT", it seems to work by directly taking in all modalities all at once into a transformer with special decoders for text or img generation!
 
+[Join the Agora discord channel to help with the implementation!](https://discord.gg/CMDpRxCV8g) and [Here is the project board:](https://github.com/users/kyegomez/projects/11/views/1)
+
 The input sequences for Gemini consist of texts, audio, images, and videos. These inputs are transformed into tokens, which are then processed by a transformer. Subsequently, conditional decoding takes place to generate image outputs.
 
 Interestingly, the architecture of Gemini bears resemblance to Fuyu's architecture but is expanded to encompass multiple modalities. Instead of utilizing a visual transformer (vit) encoder, Gemini simply feeds image embeddings directly into the transformer.
@@ -200,6 +202,10 @@ print("Output shape:", output.shape)  # Should be [1, 512, 512]
 
 
 # Todo
+
+- [ ] [Check out the project board for more todos](https://github.com/users/kyegomez/projects/11/views/1)
+
+
 - [ ] Implement the img feature embedder and align imgs with text and pass into transformer: ```Gemini models are trained to accommodate textual input interleaved with a wide variety of audio and visual inputs, such as natural images, charts, screenshots, PDFs, and videos, and they can produce
 text and image outputs (see Figure 2). The visual encoding of Gemini models is inspired by our own
 foundational work on Flamingo (Alayrac et al., 2022), CoCa (Yu et al., 2022a), and PaLI (Chen et al.,
@@ -213,7 +219,9 @@ see audio understanding demo on the website).```
 
 
 - [ ] Video Processing Technique: ```
-
+Video understanding is accomplished by encoding the video as a sequence of frames in the large
+context window. Video frames or images can be interleaved naturally with text or audio as part of the
+model input
 ```
 
 - [ ] Prompting Technique: ```
