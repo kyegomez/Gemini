@@ -112,6 +112,12 @@ print(y.shape)
 
 
 ## Tokenizer
+```We use the SentencePiece tokenizer (Kudo and Richardson, 2018) and find that training the
+tokenizer on a large sample of the entire training corpus improves the inferred vocabulary and
+subsequently improves model performance. For example, we find Gemini models can efficiently
+tokenize non-Latin scripts which can, in turn, benefit model quality as well as training and inference
+speed.```
+- Sentencepiece, tokenizer
 - We're using the same tokenizer as LLAMA with special tokens denoting the beginning and end of the multi modality tokens.
 - Does not fully process img, audio, or videos now we need help on that
 
@@ -194,6 +200,31 @@ print("Output shape:", output.shape)  # Should be [1, 512, 512]
 
 
 # Todo
-- [ ] Implement the img feature embedder and align imgs with text and pass into transformer
-- [ ] Implement the audio processing by making an audio processor that intakes in audio embeddings and reshapes it to match language embeddings dimension shape [B, SEQLEN, Dim]
-- [ ] Do the same for video
+- [ ] Implement the img feature embedder and align imgs with text and pass into transformer: ```Gemini models are trained to accommodate textual input interleaved with a wide variety of audio and visual inputs, such as natural images, charts, screenshots, PDFs, and videos, and they can produce
+text and image outputs (see Figure 2). The visual encoding of Gemini models is inspired by our own
+foundational work on Flamingo (Alayrac et al., 2022), CoCa (Yu et al., 2022a), and PaLI (Chen et al.,
+2022), with the important distinction that the models are multimodal from the beginning and can
+natively output images using discrete image tokens (Ramesh et al., 2021; Yu et al., 2022b).```
+
+- [ ] Implement the audio processing using USM by Google:```In addition, Gemini can directly ingest audio signals at
+16kHz from Universal Speech Model (USM) (Zhang et al., 2023) features. This enables the model to
+capture nuances that are typically lost when the audio is naively mapped to a text input (for example,
+see audio understanding demo on the website).```
+
+
+- [ ] Video Processing Technique: ```
+
+```
+
+- [ ] Prompting Technique: ```
+    We find Gemini Ultra achieves highest
+    accuracy when used in combination with a chain-of-thought prompting approach (Wei et al., 2022)
+    that accounts for model uncertainty. The model produces a chain of thought with k samples, for
+    example 8 or 32. If there is a consensus above a preset threshold (selected based on the validation
+    split), it selects this answer, otherwise it reverts to a greedy sample based on maximum likelihood
+    choice without chain of thought. We refer the reader to appendix for a detailed breakdown of how
+    this approach compares with only chain-of-thought prompting or only greedy sampling.```
+
+- [ ] Train a 1.8B + 3.25 Model: ```Nano-1 and Nano-2 model sizes are only 1.8B and 3.25B
+parameters respectively. Despite their size, they show exceptionally strong performance on factuality,
+i.e. retrieval-related tasks, and significant performance on reasoning, STEM, coding, multimodal and```
