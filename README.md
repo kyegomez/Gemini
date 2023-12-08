@@ -119,6 +119,7 @@ tokenizer on a large sample of the entire training corpus improves the inferred 
 subsequently improves model performance. For example, we find Gemini models can efficiently
 tokenize non-Latin scripts which can, in turn, benefit model quality as well as training and inference
 speed.```
+
 - Sentencepiece, tokenizer
 - We're using the same tokenizer as LLAMA with special tokens denoting the beginning and end of the multi modality tokens.
 - Does not fully process img, audio, or videos now we need help on that
