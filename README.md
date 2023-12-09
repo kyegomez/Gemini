@@ -220,13 +220,15 @@ model input
 ```
 
 - [ ] Prompting Technique: ```
-    We find Gemini Ultra achieves highest
-    accuracy when used in combination with a chain-of-thought prompting approach (Wei et al., 2022)
-    that accounts for model uncertainty. The model produces a chain of thought with k samples, for
-    example 8 or 32. If there is a consensus above a preset threshold (selected based on the validation
-    split), it selects this answer, otherwise it reverts to a greedy sample based on maximum likelihood
-    choice without chain of thought. We refer the reader to appendix for a detailed breakdown of how
-    this approach compares with only chain-of-thought prompting or only greedy sampling.```
+We find Gemini Ultra achieves highest
+accuracy when used in combination with a chain-of-thought prompting approach (Wei et al., 2022)
+that accounts for model uncertainty. The model produces a chain of thought with k samples, for
+example 8 or 32. If there is a consensus above a preset threshold (selected based on the validation
+split), it selects this answer, otherwise it reverts to a greedy sample based on maximum likelihood
+choice without chain of thought. We refer the reader to appendix for a detailed breakdown of how
+this approach compares with only chain-of-thought prompting or only greedy sampling.```
+
+
 
 - [ ] Train a 1.8B + 3.25 Model: ```Nano-1 and Nano-2 model sizes are only 1.8B and 3.25B
 parameters respectively. Despite their size, they show exceptionally strong performance on factuality,
