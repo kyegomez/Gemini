@@ -213,14 +213,12 @@ capture nuances that are typically lost when the audio is naively mapped to a te
 see audio understanding demo on the website).```
 
 
-- [ ] Video Processing Technique: ```
+- [ ] Video Processing Technique: "
 Video understanding is accomplished by encoding the video as a sequence of frames in the large
 context window. Video frames or images can be interleaved naturally with text or audio as part of the
-model input
-```
+model input"
 
-- [ ] Prompting Technique: ```
-We find Gemini Ultra achieves highest
+- [ ] Prompting Technique: ``` We find Gemini Ultra achieves highest
 accuracy when used in combination with a chain-of-thought prompting approach (Wei et al., 2022)
 that accounts for model uncertainty. The model produces a chain of thought with k samples, for
 example 8 or 32. If there is a consensus above a preset threshold (selected based on the validation
