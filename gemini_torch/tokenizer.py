@@ -148,5 +148,3 @@ class MultimodalSentencePieceTokenizer:
         for start_id, end_id in self.modality_tokens.values():
             tokens = [t for t in tokens if t not in (start_id, end_id)]
         return self.sp_model.decode(tokens)
-
-

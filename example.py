@@ -1,4 +1,4 @@
-import torch 
+import torch
 from gemini_torch import Gemini
 
 # Initialize the model
