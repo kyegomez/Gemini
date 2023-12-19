@@ -116,7 +116,7 @@ def test_robustness_to_random_dropout(gemini_model):
 
 
 def test_model_serialization(gemini_model):
-    serialized_model = torch.save(gemini_model.state_dict(), "gemini_model.pth")
+    torch.save(gemini_model.state_dict(), "gemini_model.pth")
     deserialized_model = Gemini()
     deserialized_model.load_state_dict(torch.load("gemini_model.pth"))
     assert isinstance(deserialized_model, Gemini), "Deserialization failed"

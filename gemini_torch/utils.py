@@ -97,7 +97,7 @@ class ImgToTransformer(nn.Module):
         # Check if img can be evenly divided into patches
         assert (
             height % self.num_patches_side == 0 and width % self.num_patches_side == 0
-        ), f"Image dimensions must be divisivle by the square root of patches"
+        ), "Image dimensions must be divisivle by the square root of patches"
 
         # Reshpe the img to patches
         x = x.unfold(
@@ -170,7 +170,6 @@ class AudioToLangEmbedding(nn.Module):
         """
         # x shape: [batch, audio_seq_len] - 2D input
         batch, audio_seq_len = x.shape
-        device = x.device
 
         # Project the audio tensor to match the seqlen and dim
         x = self.projection(x)  # x shape: [batch, seqlen * dim]
