@@ -142,7 +142,7 @@ class Gemini(Module):
             if exists(img):
                 img = self.img_to_transformer(img)
                 x = torch.concat((text, img), dim=1)
-                model_input = self.decoder.forward(x)[0]
+                model_input = self.decoder.forward(x)
 
             # Else, just use the text
             elif exists(img) and exists(audio):
@@ -150,12 +150,12 @@ class Gemini(Module):
                 x = self.audio_to_lang_embedding(audio)
                 x = self.img_to_transformer(img)
                 x = torch.concat((text, img, audio), dim=1)
-                model_input = self.decoder.forward(x)[0]
+                model_input = self.decoder.forward(x)
 
             else:
-                model_input = self.decoder.forward(text)[0]
+                model_input = self.decoder.forward(text)
 
-            return self.decoder(model_input, padded_x=model_input[0])
+            return self.decoder(model_input, padded_x=model_input)
         except Exception as e:
             print("Failed in forward method: ", e)
             raise
