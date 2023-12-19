@@ -1,6 +1,6 @@
 import torch
 import pytest
-from gemini_torch.utils import AudioToLangEmbedding
+from gemini_torch.utils import AudioToEmbeddings
 
 
 @pytest.fixture
@@ -8,7 +8,7 @@ def audio_embedding():
     audio_seq_len = 32000
     seqlen = 512
     dim = 512
-    return AudioToLangEmbedding(audio_seq_len, seqlen, dim)
+    return AudioToEmbeddings(audio_seq_len, seqlen, dim)
 
 
 def test_forward_pass(audio_embedding):
@@ -97,7 +97,7 @@ def test_audio_seq_len_equal_seqlen(audio_embedding):
     # Test when audio_seq_len is equal to seqlen
     audio_seq_len = seqlen = 512
     dim = 512
-    audio_embedding = AudioToLangEmbedding(audio_seq_len, seqlen, dim)
+    audio_embedding = AudioToEmbeddings(audio_seq_len, seqlen, dim)
     input_audio = torch.randn(1, audio_seq_len)
     output = audio_embedding(input_audio)
     assert output.shape == (1, seqlen, dim)
@@ -108,7 +108,7 @@ def test_audio_seq_len_less_than_seqlen(audio_embedding):
     audio_seq_len = 256
     seqlen = 512
     dim = 512
-    audio_embedding = AudioToLangEmbedding(audio_seq_len, seqlen, dim)
+    audio_embedding = AudioToEmbeddings(audio_seq_len, seqlen, dim)
     input_audio = torch.randn(1, audio_seq_len)
     output = audio_embedding(input_audio)
     assert output.shape == (1, seqlen, dim)
@@ -119,7 +119,7 @@ def test_audio_seq_len_greater_than_seqlen(audio_embedding):
     audio_seq_len = 1024
     seqlen = 512
     dim = 512
-    audio_embedding = AudioToLangEmbedding(audio_seq_len, seqlen, dim)
+    audio_embedding = AudioToEmbeddings(audio_seq_len, seqlen, dim)
     input_audio = torch.randn(1, audio_seq_len)
     output = audio_embedding(input_audio)
     assert output.shape == (1, seqlen, dim)
@@ -130,7 +130,7 @@ def test_dim_less_than_seqlen(audio_embedding):
     audio_seq_len = 32000
     seqlen = 512
     dim = 256
-    audio_embedding = AudioToLangEmbedding(audio_seq_len, seqlen, dim)
+    audio_embedding = AudioToEmbeddings(audio_seq_len, seqlen, dim)
     input_audio = torch.randn(1, audio_seq_len)
     output = audio_embedding(input_audio)
     assert output.shape == (1, seqlen, dim)
@@ -141,7 +141,7 @@ def test_dim_greater_than_seqlen(audio_embedding):
     audio_seq_len = 32000
     seqlen = 512
     dim = 1024
-    audio_embedding = AudioToLangEmbedding(audio_seq_len, seqlen, dim)
+    audio_embedding = AudioToEmbeddings(audio_seq_len, seqlen, dim)
     input_audio = torch.randn(1, audio_seq_len)
     output = audio_embedding(input_audio)
     assert output.shape == (1, seqlen, dim)

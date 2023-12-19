@@ -3,7 +3,7 @@ from torch.nn import Module
 from zeta.structs import AutoregressiveWrapper
 
 from gemini_torch.transformer import Decoder, Transformer
-from gemini_torch.utils import ImgToTransformer, AudioToLangEmbedding
+from gemini_torch.utils import ImgToEmbeddings, AudioToEmbeddings
 
 
 def exists(val):
@@ -91,7 +91,7 @@ class Gemini(Module):
             self.decoder = AutoregressiveWrapper(self.gemini)
 
             # Takes in imgs -> patches them -> transforms them to the same dimension as the model
-            self.img_to_transformer = ImgToTransformer(
+            self.img_to_transformer = ImgToEmbeddings(
                 patches=patches,
                 patch_size=patch_size,
                 transformer_dim=dim,
@@ -103,7 +103,7 @@ class Gemini(Module):
             )
 
             # Takes in audio -> transforms it to the same dimension as the model
-            self.audio_to_lang_embedding = AudioToLangEmbedding(
+            self.audio_to_lang_embedding = AudioToEmbeddings(
                 audio_seq_len=audio_seq_len, seqlen=num_tokens, dim=dim, *args, **kwargs
             )
 

@@ -1,11 +1,11 @@
 import torch
 import unittest
-from gemini_torch.utils import ImgToTransformer
+from gemini_torch.utils import ImgToEmbeddings
 
 
-class TestImgToTransformer(unittest.TestCase):
+class TestImgToEmbeddings(unittest.TestCase):
     def setUp(self):
-        self.model = ImgToTransformer(
+        self.model = ImgToEmbeddings(
             patches=16,
             patch_size=16,
             transformer_dim=512,
@@ -15,7 +15,7 @@ class TestImgToTransformer(unittest.TestCase):
         )
 
     def test_initialization(self):
-        self.assertIsInstance(self.model, ImgToTransformer)
+        self.assertIsInstance(self.model, ImgToEmbeddings)
 
     def test_forward_with_img_256(self):
         img = torch.randn(1, 3, 256, 256)

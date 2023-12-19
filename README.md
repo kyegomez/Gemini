@@ -135,11 +135,11 @@ print("Decoded audio:", decoded_audio)
 
 ```
 
-### `ImgToTransformer`
+### `ImgToEmbeddings`
 - takes in img -> patches -> reshapes to [B, SEQLEN, Dim] to align with transformer
 ```python
 import torch
-from gemini_torch.utils import ImgToTransformer
+from gemini_torch.utils import ImgToEmbeddings
 
 # Example usage
 num_patches = 16
@@ -149,7 +149,7 @@ img_channels = 3
 seq_len = 50000
 reduced_dim = 256  # Reduced dimension after dimensionality reduction
 
-model = ImgToTransformer(
+model = ImgToEmbeddings(
     num_patches, patch_size, transformer_dim, img_channels, seq_len, reduced_dim
 )
 
@@ -163,19 +163,19 @@ print(seq_space_output.shape)  # Expected shape: [1, 50000, 256]
 
 ```
 
-### `AudioToLangEmbedding`
+### `AudioToEmbeddings`
 - Transforms audio into the same shape as text tensors.
 
 ```python
 import torch 
-from gemini_torch.utils import AudioToLangEmbedding
+from gemini_torch.utils import AudioToEmbeddings
 
 # Example usage
 audio_seq_len = 32000  # Input audio sequence length
 seqlen = 512  # Sequence length to align with the language transformer
 dim = 512  # Embedding dimension
 
-model = AudioToLangEmbedding(audio_seq_len, seqlen, dim)
+model = AudioToEmbeddings(audio_seq_len, seqlen, dim)
 audio_input = torch.randn(1, audio_seq_len)  # Example input tensor
 output = model(audio_input)
 

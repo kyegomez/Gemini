@@ -3,8 +3,8 @@ from torch import nn
 from einops import rearrange
 
 
-class ImgToTransformer(nn.Module):
-    """ImgToTransformer
+class ImgToEmbeddings(nn.Module):
+    """ImgToEmbeddings
 
     Args:
         patches (int): Number of patches to divide the image into
@@ -25,8 +25,8 @@ class ImgToTransformer(nn.Module):
 
     Example:
         >>> import torch
-        >>> from geminix import ImgToTransformer
-        >>> model = ImgToTransformer(
+        >>> from geminix import ImgToEmbeddings
+        >>> model = ImgToEmbeddings(
         ...     patches=16,
         ...     patch_size=16,
         ...     transformer_dim=512,
@@ -51,7 +51,7 @@ class ImgToTransformer(nn.Module):
         *args,
         **kwargs,
     ):
-        super(ImgToTransformer, self).__init__()
+        super(ImgToEmbeddings, self).__init__()
         self.patches = patches
         self.patch_size = patch_size
         self.transformer_dim = transformer_dim
@@ -129,8 +129,8 @@ class ImgToTransformer(nn.Module):
         return x
 
 
-class AudioToLangEmbedding(nn.Module):
-    """AudioToLangEmbedding
+class AudioToEmbeddings(nn.Module):
+    """AudioToEmbeddings
 
     Args:
         audio_seq_len (int): Length of the audio sequence
@@ -139,8 +139,8 @@ class AudioToLangEmbedding(nn.Module):
 
     Example:
         >>> import torch
-        >>> from geminix import AudioToLangEmbedding
-        >>> model = AudioToLangEmbedding(
+        >>> from geminix import AudioToEmbeddings
+        >>> model = AudioToEmbeddings(
         ...     audio_seq_len=32000,
         ...     seqlen=512,
         ...     dim=512
@@ -152,7 +152,7 @@ class AudioToLangEmbedding(nn.Module):
     """
 
     def __init__(self, audio_seq_len, seqlen, dim):
-        super(AudioToLangEmbedding, self).__init__()
+        super(AudioToEmbeddings, self).__init__()
         self.audio_seq_len = audio_seq_len
         self.seqlen = seqlen
         self.dim = dim
@@ -185,7 +185,7 @@ class AudioToLangEmbedding(nn.Module):
 # seqlen = 512  # Sequence length to align with the language transformer
 # dim = 512  # Embedding dimension
 
-# model = AudioToLangEmbedding(audio_seq_len, seqlen, dim)
+# model = AudioToEmbeddings(audio_seq_len, seqlen, dim)
 # audio_input = torch.randn(1, audio_seq_len)  # Example input tensor
 # output = model(audio_input)
 
