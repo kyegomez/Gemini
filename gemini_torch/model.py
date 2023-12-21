@@ -113,7 +113,7 @@ class Gemini(Module):
 
     def forward(
         self,
-        text: torch.Tensor,
+        text: torch.Tensor = None,
         img: torch.Tensor = None,
         audio: torch.Tensor = None,
         *args,
@@ -138,24 +138,18 @@ class Gemini(Module):
 
         """
         try:
-            # If image is provided, concat it with the text
-            if exists(img):
-                img = self.img_to_transformer(img)
-                x = torch.concat((text, img), dim=1)
-                model_input = self.decoder.forward(x)
+            if exists(img) and exists(audio):
+                # Process audio and image inputs
+                audio_emb = self.audio_to_lang_embedding(audio)
+                img_emb = self.img_to_transformer(img)
 
-            # Else, just use the text
-            elif exists(img) and exists(audio):
-                # Concat the audio and image and text embeddings all at once, audio is [batch, audio_seq_len]
-                x = self.audio_to_lang_embedding(audio)
-                x = self.img_to_transformer(img)
-                x = torch.concat((text, img, audio), dim=1)
-                model_input = self.decoder.forward(x)
-
+                # Concatenate text, image, and audio embeddings
+                x = torch.cat((text, img_emb, audio_emb), dim=1)
             else:
-                model_input = self.decoder.forward(text)
+                x = text
 
-            return self.decoder(model_input, padded_x=model_input)
+            # Call the forward method of the decoder once
+            return self.decoder(x, padded_x=x)
         except Exception as e:
             print("Failed in forward method: ", e)
             raise
