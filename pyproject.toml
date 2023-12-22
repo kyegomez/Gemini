@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "gemini-torch"
-version = "0.1.0"
+version = "0.1.1"
 description = "Gemini - Pytorch"
 license = "MIT"
 authors = ["Kye Gomez <kye@apac.ai>"]
