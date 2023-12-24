@@ -70,12 +70,12 @@ class ImgToEmbeddings(nn.Module):
         # Dim reduction
         self.dim_reduction = nn.Linear(transformer_dim, reduced_dim)
 
-        # Batch Norm and relu
-        self.norm = nn.BatchNorm1d(patches)
-        self.activate = nn.ReLU()
+        # # Batch Norm and relu
+        # self.norm = nn.BatchNorm1d(patches)
+        # self.activate = nn.ReLU()
 
-        # Positional encoding
-        self.positional_encoding = nn.Parameter(torch.zeros(1, patches, reduced_dim))
+        # # Positional encoding
+        # self.positional_encoding = nn.Parameter(torch.zeros(1, patches, reduced_dim))
 
         # Token mixing
         self.token_mixer = nn.Linear(patches * reduced_dim, patches * reduced_dim)
@@ -114,8 +114,8 @@ class ImgToEmbeddings(nn.Module):
         x = self.dim_reduction(x)
 
         # Batch norm
-        x = self.norm(x)
-        x = self.activate(x)
+        # x = self.norm(x)
+        # x = self.activate(x)
 
         # Add positional encoding
         x = x.view(batch, -1)

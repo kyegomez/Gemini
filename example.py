@@ -10,9 +10,6 @@ model = Gemini(
     dim_head=64,  # Reduced from 128
     heads=12,  # Reduced from 24
     use_abs_pos_emb=False,
-    alibi_pos_bias=True,
-    alibi_num_heads=6,  # Reduced from 12
-    rotary_xpos=True,
     attn_flash=True,
     attn_kv_heads=2,
     qk_norm=True,
@@ -33,4 +30,4 @@ audio = torch.randn(1, 64)  # Reduced audio_seq_len from 128
 y = model(text, img, audio)
 
 # Output shape: [batch, seq_len, dim]
-print(y.shape)
+print(y)
