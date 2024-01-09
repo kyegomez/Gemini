@@ -136,6 +136,10 @@ class Gemini(Module):
             if exists(img):
                 # Process image input
                 x = self.img_to_text_embedding(img)
+                print(f"Image shape: {x.shape}")
+                x = torch.cat((text, x))
+                print(f"Concat shape: {x.shape}")
+                return x
             else:
                 x = text
 
