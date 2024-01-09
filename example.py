@@ -15,6 +15,10 @@ model = Gemini(
     qk_norm=True,
     attn_qk_norm=True,
     attn_qk_norm_dim_scale=True,
+    patches=8,  # Reduced from 16
+    patch_size=8,  # Reduced from 16
+    img_channels=3,  # Reduced from 3
+    # audio_seq_len=32,  # Reduced from 64
 )
 
 # Text shape: [batch, seq_len, dim]
