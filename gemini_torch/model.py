@@ -131,7 +131,11 @@ class Gemini(Module):
                 img_emb = self.img_to_transformer(img)
 
                 # Concatenate text, image, and audio embeddings
-                x = torch.cat((text, img_emb, audio_emb), dim=1)
+                x = torch.cat((text, img_emb, audio_emb))
+                
+            if exists(img):
+                # Process image input
+                x = self.img_to_text_embedding(img)
             else:
                 x = text
 
