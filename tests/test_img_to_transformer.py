@@ -1,5 +1,5 @@
 import torch
-from gemini_torch.utils import ImgToEmbeddings
+from gemini_torch.utils import ImageToTextEmbeddings
 
 # Example usage
 num_patches = 16
@@ -9,7 +9,7 @@ img_channels = 3
 seq_len = 50000
 reduced_dim = 256  # Reduced dimension after dimensionality reduction
 
-model = ImgToEmbeddings(
+model = ImageToTextEmbeddings(
     num_patches, patch_size, transformer_dim, img_channels, seq_len, reduced_dim
 )
 

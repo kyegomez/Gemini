@@ -1,133 +1,61 @@
-import torch
+from einops import rearrange, reduce
 from torch import nn
-from einops import rearrange
 
 
-class ImgToEmbeddings(nn.Module):
-    """ImgToEmbeddings
+class ImageToTextEmbeddings(nn.Module):
+    """
+    Converts images into text tokens using patch-based embedding.
 
     Args:
-        patches (int): Number of patches to divide the image into
-        patch_size (int): Size of the patches
-        transformer_dim (int): Dimension of the transformer
-        img_channels (int): Number of channels in the image
-        seq_len (int): Length of the sequence
-        reduced_dim (int): Dimension of the reduced embedding
+        patch_size (int): The size of each patch in the image.
+        dim (int): The dimension of the embedding for each patch.
+        seq_len (int): The desired sequence length of the text tokens.
 
     Returns:
-        torch.Tensor: The output of the model
+        torch.Tensor: The text tokens representing the input images.
 
-    Input shape:
-        (batch, channels, height, width)
-
-    Output shape:
-        (batch, seq_len, reduced_dim)
-
-    Example:
-        >>> import torch
-        >>> from geminix import ImgToEmbeddings
-        >>> model = ImgToEmbeddings(
-        ...     patches=16,
-        ...     patch_size=16,
-        ...     transformer_dim=512,
-        ...     img_channels=3,
-        ...     seq_len=128,
-        ...     reduced_dim=128
-        ... )
-        >>> x = torch.randn(1, 3, 256, 256)
-        >>> y = model(x)
-        >>> y.shape
-        torch.Size([1, 128, 128])
     """
-
-    def __init__(
-        self,
-        patches: int,
-        patch_size: int,
-        transformer_dim: int,
-        img_channels: int,
-        seq_len: int,
-        reduced_dim: int,
-        *args,
-        **kwargs,
-    ):
-        super(ImgToEmbeddings, self).__init__()
-        self.patches = patches
+    def __init__(self, patch_size, dim, seq_len):
+        super().__init__()
         self.patch_size = patch_size
-        self.transformer_dim = transformer_dim
-        self.img_channels = img_channels
+        self.dim = dim
         self.seq_len = seq_len
-        self.reduced_dim = reduced_dim
+        self.projection = nn.Linear(patch_size * patch_size * 3, dim)
+        # self.seq_proj = nn.Linear(dim, seq_len)
 
-        # Img is a square, cal number of apthces
-        self.num_patches_side = int(patches**0.5)
+    def forward(self, images):
+        # Input images are assumed to be in the shape (batch_size, channels, height, width)
+        batch_size, _, height, width = images.shape
+        
+        seq_proj = nn.Linear(height, self.seq_len)
 
-        # Patch embedding layer
-        self.patch_embedding = nn.Linear(
-            patch_size * patch_size * img_channels, transformer_dim
-        )
+        # Ensure that the image dimensions are divisible by the patch size
+        assert height % self.patch_size == 0 and width % self.patch_size == 0, \
+            "Image dimensions must be divisible by the patch size"
 
-        # Dim reduction
-        self.dim_reduction = nn.Linear(transformer_dim, reduced_dim)
+        # Rearrange the images into patches using einops
+        patches = rearrange(images, 'b c (h p1) (w p2) -> b (h w) (p1 p2 c)', p1=self.patch_size, p2=self.patch_size)
 
-        # # Batch Norm and relu
-        # self.norm = nn.BatchNorm1d(patches)
-        # self.activate = nn.ReLU()
+        # Project the patches into the embedding dimension
+        embeddings = self.projection(patches)
 
-        # # Positional encoding
-        # self.positional_encoding = nn.Parameter(torch.zeros(1, patches, reduced_dim))
+        # Reshape the embeddings into the shape (batch_size, seq_len, dim)
+        seq_len = (height // self.patch_size) * (width // self.patch_size)
+        text_tokens = rearrange(embeddings, 'b (h w) e -> b h w e', h=seq_len, w=1)
+        text_tokens = reduce(text_tokens, "b h w e -> b h (w e)", "mean")
+        
+        # Project the embeddings into the sequence length, in the 2nd dimension
+        text_tokens = rearrange(text_tokens, "b h d -> b d h", h=seq_len)
+        text_tokens = seq_proj(text_tokens)
+        text_tokens = rearrange(text_tokens, "b d h -> b h d")
 
-        # Token mixing
-        self.token_mixer = nn.Linear(patches * reduced_dim, patches * reduced_dim)
-
-        # Linear layer to expand the seq to vocab
-        self.seq_expansion = nn.Linear(patches * reduced_dim, seq_len * reduced_dim)
-
-    def forward(self, x: torch.Tensor):
-        """Forward pass
-
-        Args:
-            x (torch.Tensor): _description_
-
-        Returns:
-            _type_: _description_
-        """
-        batch, channels, height, width, height = x.shape
-
-        # Check if img can be evenly divided into patches
-        assert (
-            height % self.num_patches_side == 0 and width % self.num_patches_side == 0
-        ), "Image dimensions must be divisivle by the square root of patches"
-
-        # Reshpe the img to patches
-        x = x.unfold(
-            2,
-            self.patch_size,
-        ).unfold(3, self.patch_size, self.patch_size)
-        x = x.contiguous().view(batch, channels, self.num_patches, -1)
-        x = x.permute(0, 2, 1, 3).contiguous().view(batch, self.num_patches, -1)
-
-        # Apply patch embedding
-        x = self.patch_embedding(x)
-
-        # Dim reduction
-        x = self.dim_reduction(x)
-
-        # Batch norm
-        # x = self.norm(x)
-        # x = self.activate(x)
-
-        # Add positional encoding
-        x = x.view(batch, -1)
-        x = self.token_mixer(x)
-        x = x.view(batch, self.num_patches, -1)
-
-        # Expand the seq to match vocab
-        x = self.seq_expansion(x)
-        x = x.view(batch, self.seq_len, -1)
-
-        return x
-
+        return text_tokens
+    
+# x = torch.randn(1, 3, 64, 64)
+# model = ImageToTextEmbeddings(patch_size=8, dim=512, seq_len=128)
+# y = model(x)
+# print(y.shape)  # Should be [1, 64, 512]
+    
 
 class AudioToEmbeddings(nn.Module):
     """AudioToEmbeddings
@@ -178,15 +106,3 @@ class AudioToEmbeddings(nn.Module):
         x = rearrange(x, "b (s d) -> b s d", s=self.seqlen, d=self.dim)
 
         return x
-
-
-# # Example usage
-# audio_seq_len = 32000  # Input audio sequence length
-# seqlen = 512  # Sequence length to align with the language transformer
-# dim = 512  # Embedding dimension
-
-# model = AudioToEmbeddings(audio_seq_len, seqlen, dim)
-# audio_input = torch.randn(1, audio_seq_len)  # Example input tensor
-# output = model(audio_input)
-
-# print("Output shape:", output.shape)  # Should be [1, 512, 512]

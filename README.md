@@ -8,13 +8,7 @@ The open source implementation of Gemini, the model that will "eclipse ChatGPT",
 
 [Join the Agora discord channel to help with the implementation!](https://discord.gg/CMDpRxCV8g) and [Here is the project board:](https://github.com/users/kyegomez/projects/11/views/1)
 
-The input sequences for Gemini consist of texts, audio, images, and videos. These inputs are transformed into tokens, which are then processed by a transformer. Subsequently, conditional decoding takes place to generate image outputs.
-
-Interestingly, the architecture of Gemini bears resemblance to Fuyu's architecture but is expanded to encompass multiple modalities. Instead of utilizing a visual transformer (vit) encoder, Gemini simply feeds image embeddings directly into the transformer.
-
-For Gemini, the token inputs will likely be indicated by special modality tokens such as [IMG], <img>, [AUDIO], or <audio>. Codi, a component of Gemini, also employs conditional generation and makes use of the tokenized outputs.
-
-To implement this model effectively, I intend to initially focus on the image embeddings to ensure their smooth integration. Subsequently, I will proceed with incorporating audio embeddings and then video embeddings.
+The input sequences for Gemini consist of texts, audio, images, and videos. These inputs are transformed into tokens, which are then processed by a transformer. Subsequently, conditional decoding takes place to generate image outputs. Interestingly, the architecture of Gemini bears resemblance to Fuyu's architecture but is expanded to encompass multiple modalities. Instead of utilizing a visual transformer (vit) encoder, Gemini simply feeds image embeddings directly into the transformer. For Gemini, the token inputs will likely be indicated by special modality tokens such as [IMG], <img>, [AUDIO], or <audio>. Codi, a component of Gemini, also employs conditional generation and makes use of the tokenized outputs. To implement this model effectively, I intend to initially focus on the image embeddings to ensure their smooth integration. Subsequently, I will proceed with incorporating audio embeddings and then video embeddings.
 
 # Install
 `pip3 install gemini-torch`
@@ -140,11 +134,11 @@ print("Decoded audio:", decoded_audio)
 
 ```
 
-### `ImgToEmbeddings`
+### `ImageToTextEmbeddings`
 - takes in img -> patches -> reshapes to [B, SEQLEN, Dim] to align with transformer
 ```python
 import torch
-from gemini_torch.utils import ImgToEmbeddings
+from gemini_torch.utils import ImageToTextEmbeddings
 
 # Example usage
 num_patches = 16
@@ -154,7 +148,7 @@ img_channels = 3
 seq_len = 50000
 reduced_dim = 256  # Reduced dimension after dimensionality reduction
 
-model = ImgToEmbeddings(
+model = ImageToTextEmbeddings(
     num_patches, patch_size, transformer_dim, img_channels, seq_len, reduced_dim
 )
 

@@ -1,11 +1,11 @@
 import torch
 import unittest
-from gemini_torch.utils import ImgToEmbeddings
+from gemini_torch.utils import ImageToTextEmbeddings
 
 
-class TestImgToEmbeddings(unittest.TestCase):
+class TestImageToTextEmbeddings(unittest.TestCase):
     def setUp(self):
-        self.model = ImgToEmbeddings(
+        self.model = ImageToTextEmbeddings(
             patches=16,
             patch_size=16,
             transformer_dim=512,
@@ -15,7 +15,7 @@ class TestImgToEmbeddings(unittest.TestCase):
         )
 
     def test_initialization(self):
-        self.assertIsInstance(self.model, ImgToEmbeddings)
+        self.assertIsInstance(self.model, ImageToTextEmbeddings)
 
     def test_forward_with_img_256(self):
         img = torch.randn(1, 3, 256, 256)
