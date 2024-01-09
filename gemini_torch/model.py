@@ -82,7 +82,7 @@ class Gemini(Module):
             )
 
             # Autoregressive wrapper for the model
-            self.decoder = AutoregressiveWrapper(self.gemini)
+            # self.decoder = AutoregressiveWrapper(self.gemini)
 
             # Takes in imgs -> patches them -> transforms them to the same dimension as the model
             self.img_to_transformer = ImgToEmbeddings(
