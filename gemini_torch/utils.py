@@ -79,7 +79,7 @@ class AudioToEmbeddings(nn.Module):
         torch.Size([1, 512, 512])
     """
 
-    def __init__(self, audio_seq_len, seqlen, dim):
+    def __init__(self, audio_seq_len: int, seqlen: int, dim: int):
         super(AudioToEmbeddings, self).__init__()
         self.audio_seq_len = audio_seq_len
         self.seqlen = seqlen

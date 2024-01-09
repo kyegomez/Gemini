@@ -91,7 +91,7 @@ class Gemini(Module):
 
             # Takes in audio -> transforms it to the same dimension as the model
             self.audio_to_lang_embedding = AudioToEmbeddings(
-                audio_seq_len=audio_seq_len, seqlen=num_tokens, dim=dim, *args, **kwargs
+                audio_seq_len=audio_seq_len, seqlen=max_seq_len, dim=dim, *args, **kwargs
             )
 
         except Exception as e:
