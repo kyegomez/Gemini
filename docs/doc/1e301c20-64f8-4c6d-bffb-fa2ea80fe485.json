@@ -1,0 +1,10 @@
+{
+    "summary": "This code demonstrates the usage of ImageToTextEmbeddings in Gemini_torch. It initializes an image-to-text model with specified parameters and performs a forward pass on a dummy image input to output a sequence space embedding with reduced dimension, expected shape [1, 50000, 256].",
+    "details": [
+        {
+            "comment": "This code demonstrates the usage of ImageToTextEmbeddings in Gemini_torch. It initializes an image-to-text model with specified parameters and performs a forward pass on a dummy image input to output a sequence space embedding with reduced dimension, expected shape [1, 50000, 256].",
+            "location": "\"/media/root/Toshiba XG3/works/Gemini/docs/src/tests/test_img_to_transformer.py\":0-20",
+            "content": "import torch\nfrom gemini_torch.utils import ImageToTextEmbeddings\n# Example usage\nnum_patches = 16\npatch_size = 16\ntransformer_dim = 512\nimg_channels = 3\nseq_len = 50000\nreduced_dim = 256  # Reduced dimension after dimensionality reduction\nmodel = ImageToTextEmbeddings(\n    num_patches, patch_size, transformer_dim, img_channels, seq_len, reduced_dim\n)\n# Dummy image input [BATCH, CHANNELS, HEIGHT, WIDTH]\ndummy_img = torch.randn(1, 3, 64, 64)  # Batch size of 1, 64x64 RGB image\n# Forward pass\nseq_space_output = model(dummy_img)\nprint(seq_space_output.shape)  # Expected shape: [1, 50000, 256]"
+        }
+    ]
+}

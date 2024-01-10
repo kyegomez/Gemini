@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="github-markdown.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .directory:hover {
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        :target {
+            background-color: yellow !important;
+        }
+
+        .folded::before {
+            content: '\25B6';
+            margin-right: 8px;
+            /* Add space between marker and text */
+        }
+
+        .expanded::before {
+            content: '\25BC';
+            margin-right: 8px;
+            /* Add space between marker and text */
+        }
+    </style>
+    <script>
+        function toggleVisibility(element) {
+            let mclass = element.getAttribute("class");
+            if (mclass == "expanded") {
+                element.setAttribute('class', 'folded');
+            } else {
+                element.setAttribute('class', 'expanded');
+            }
+            const siblings = element.parentNode.children;
+            for (const sibling of siblings) {
+                if (sibling !== element) {
+                    sibling.style.display = (sibling.style.display === 'none') ? 'block' : 'none';
+                }
+            }
+        }
+    </script>
+    <style>
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+        }
+
+        @media (max-width: 767px) {
+            .markdown-body {
+                padding: 15px;
+            }
+
+            .partial-repository-url {
+                display: none;
+            }
+        }
+
+        ul {
+            list-style: none;
+        }
+    </style>
+</head>
+
+<body>
+    <article class="markdown-body">
+        <h2>Project Structure<span hierarchy="0" class="partial-repository-url"> of: kyegomez/Gemini</span><div style="float: right;"><a href="index.html"><i class="bi bi-search"></i></a></div></h2>
+<ul>
+<li><span hierarchy="0" class="expanded" onclick="toggleVisibility(this)" ><strong class="directory" id="/"><code>Gemini</code></strong> <em>Multi-modal Transformer models for text/image generation and testing</em></span><ul>
+<li><a href="index.html?q=/README.md" id="/README.md"><code>README.md</code></a> <em>Multimodal transformer model for text/image generation</em></li>
+<li><a href="index.html?q=/example.py" id="/example.py"><code>example.py</code></a> <em>Python model optimized, text-image inputs, outputs text sequence.</em></li>
+<li><span hierarchy="1" class="expanded" onclick="toggleVisibility(this)" ><strong class="directory" id="/gemini_torch/"><code>gemini_torch</code></strong> <em>Multi-modal Transformer models for EIA data</em></span><ul>
+<li><a href="index.html?q=/gemini_torch/__init__.py" id="/gemini_torch/__init__.py"><code><strong>init</strong>.py</code></a> <em>Imports and adds to <strong>all</strong> list.</em></li>
+<li><a href="index.html?q=/gemini_torch/model.py" id="/gemini_torch/model.py"><code>model.py</code></a> <em>Transformer, Gemini models, multi-layer, concatenation</em></li>
+<li><a href="index.html?q=/gemini_torch/tokenizer.py" id="/gemini_torch/tokenizer.py"><code>tokenizer.py</code></a> <em>Multimodal SentencePiece tokenizer with modality, BOS, and EOS.</em></li>
+<li><a href="index.html?q=/gemini_torch/transformer.py" id="/gemini_torch/transformer.py"><code>transformer.py</code></a> <em>Transformer model with customizable layers and dropout</em></li>
+<li><a href="index.html?q=/gemini_torch/utils.py" id="/gemini_torch/utils.py"><code>utils.py</code></a> <em>Embeddings from Images and Audio.</em></li>
+</ul>
+</li>
+<li><a href="index.html?q=/pyproject.toml" id="/pyproject.toml"><code>pyproject.toml</code></a> <em>PyProject config: Poetry, Gemini-Torch, Python 3.9</em></li>
+<li><a href="index.html?q=/requirements.txt" id="/requirements.txt"><code>requirements.txt</code></a> <em>Python packages: zetascale, torch, einops, pytest, sentencepiece.</em></li>
+<li><span hierarchy="1" class="expanded" onclick="toggleVisibility(this)" ><strong class="directory" id="/tests/"><code>tests</code></strong> <em>Test models, encoders, and tokenizers.</em></span><ul>
+<li><a href="index.html?q=/tests/test_audio_embedder.py" id="/tests/test_audio_embedder.py"><code>test_audio_embedder.py</code></a> <em>Test audio embedding function's behavior and output integrity.</em></li>
+<li><a href="index.html?q=/tests/test_gemini.py" id="/tests/test_gemini.py"><code>test_gemini.py</code></a> <em>Gemini model test functions: parameters, forward pass, error handling.</em></li>
+<li><a href="index.html?q=/tests/test_img_encoder.py" id="/tests/test_img_encoder.py"><code>test_img_encoder.py</code></a> <em>Tests ImageToTextEmbeddings model initialization and output shape.</em></li>
+<li><a href="index.html?q=/tests/test_img_to_transformer.py" id="/tests/test_img_to_transformer.py"><code>test_img_to_transformer.py</code></a> <em>ImageToTextEmbeddings initialization and forward pass demonstrated.</em></li>
+<li><a href="index.html?q=/tests/test_tokenizer.py" id="/tests/test_tokenizer.py"><code>test_tokenizer.py</code></a> <em>Test multi-modal sentence piece tokenizer functions.</em></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+    </article>
+    <script type="text/javascript">
+        function getQueryParams() {
+            var search = window.location.search.substring(1); // Remove leading '?'
+            var queryParams = {};
+            search.split('&').forEach(function (pair) {
+                var parts = pair.split('=');
+                var key = decodeURIComponent(parts[0]);
+                var value = decodeURIComponent(parts[1]);
+                queryParams[key] = value;
+            });
+            return queryParams;
+        }
+
+        const queryParams = getQueryParams(window.location.search);
+        const show_full = queryParams.full == "true";
+        if (!show_full) {
+            const spans = document.querySelectorAll('span');
+            for (let span of spans) {
+                if (span.getAttribute("hierarchy") == '0') { continue }
+
+                toggleVisibility(span);
+            }
+        }
+    </script>
+</body>
+
+</html>

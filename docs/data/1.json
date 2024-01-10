@@ -1,0 +1,548 @@
+{
+    "100": {
+        "file_id": 7,
+        "content": "        else:\n            project_in = nn.Sequential(\n                nn.Linear(dim, inner_dim, bias=not no_bias), activation\n            )\n        self.ff = Sequential(\n            project_in,\n            nn.LayerNorm(inner_dim) if post_act_ln else None,\n            nn.Dropout(dropout),\n            nn.Linear(inner_dim, dim_out, bias=not no_bias),\n        )\n        # init last linear layer to 0\n        if zero_init_output:\n            init_zero_(self.ff[-1])\n    def forward(self, x):\n        return self.ff(x)\n# attention. it is all we need\nclass Attention(nn.Module):\n    def __init__(\n        self,\n        dim,\n        dim_head=DEFAULT_DIM_HEAD,\n        heads=8,\n        causal=False,\n        flash=False,\n        talking_heads=False,\n        head_scale=False,\n        sparse_topk=None,\n        num_mem_kv=0,\n        dropout=0.0,\n        on_attn=False,\n        gate_values=False,\n        zero_init_output=False,\n        max_attend_past=None,\n        qk_norm=False,\n        qk_norm_groups=1,\n        qk_norm_scale=10,\n        qk_norm_dim_scale=False,",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:701-744"
+    },
+    "101": {
+        "file_id": 7,
+        "content": "The code defines a module for self-attention and feed-forward layers in a transformer architecture. It initializes the layers with specified dimensions, includes optional parameters for dropout, layer normalization, and other features like causal and flash attention. The forward function performs the attention calculation and returns the output.",
+        "type": "comment"
+    },
+    "102": {
+        "file_id": 7,
+        "content": "        one_kv_head=False,\n        kv_heads=None,\n        shared_kv=False,\n        value_dim_head=None,\n        tensor_product=False,  # https://arxiv.org/abs/2208.06061\n        cascading_heads=False,\n        add_zero_kv=False,  # same as add_zero_attn in pytorch\n        onnxable=False,\n    ):\n        super().__init__()\n        self.scale = dim_head**-0.5\n        self.heads = heads\n        self.causal = causal\n        self.max_attend_past = max_attend_past\n        assert not (\n            exists(kv_heads) and one_kv_head\n        ), \"either attn_one_kv_head is set to True (in which case kv_heads is set to 1), or attn_kv_heads is set, but not both\"\n        value_dim_head = default(value_dim_head, dim_head)\n        kv_heads = default(kv_heads, heads)\n        kv_heads = 1 if one_kv_head else kv_heads\n        assert divisible_by(heads, kv_heads)\n        self.kv_heads = kv_heads\n        q_dim = dim_head * heads\n        k_dim = dim_head * kv_heads\n        v_dim = value_dim_head * kv_heads\n        out_dim = value_dim_head * heads",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:745-776"
+    },
+    "103": {
+        "file_id": 7,
+        "content": "This code initializes a transformer layer with configurable parameters such as the number of heads, causal masking, maximum attended past steps, and more. The code checks for inconsistencies in the input arguments and calculates dimensions for query (Q), key (K), and value (V) matrices based on the provided inputs.",
+        "type": "comment"
+    },
+    "104": {
+        "file_id": 7,
+        "content": "        self.to_q = nn.Linear(dim, q_dim, bias=False)\n        self.to_k = nn.Linear(dim, k_dim, bias=False)\n        # shared key / values, for further memory savings during inference\n        assert not (\n            shared_kv and value_dim_head != dim_head\n        ), \"key and value head dimensions must be equal for shared key / values\"\n        self.to_v = nn.Linear(dim, v_dim, bias=False) if not shared_kv else None\n        # relations projection from tp-attention\n        self.to_r = nn.Linear(dim, v_dim, bias=False) if tensor_product else None\n        # add GLU gating for aggregated values, from alphafold2\n        self.to_v_gate = None\n        if gate_values:\n            self.to_v_gate = nn.Linear(dim, out_dim)\n            nn.init.constant_(self.to_v_gate.weight, 0)\n            nn.init.constant_(self.to_v_gate.bias, 1)\n        # cosine sim attention\n        self.qk_norm = qk_norm\n        self.qk_norm_groups = qk_norm_groups\n        self.qk_norm_scale = qk_norm_scale\n        # whether to use the rmsnorm (equivalent to cosine sim attention when scale is equal to 1) - https://arxiv.org/abs/2302.05442",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:778-802"
+    },
+    "105": {
+        "file_id": 7,
+        "content": "The code initializes layers for a transformer model. It includes linear layers for query (to_q), key (to_k) and value (to_v) projections, as well as a relation projection layer (to_r). The code also checks for shared key/value dimensions and whether to use gating for aggregated values (to_v_gate). Additionally, it sets parameters for cosine similarity attention (qk_norm, qk_norm_groups, qk_norm_scale) and determines if RMSNorm should be used.",
+        "type": "comment"
+    },
+    "106": {
+        "file_id": 7,
+        "content": "        self.qk_norm_dim_scale = qk_norm_dim_scale\n        self.qk_norm_q_scale = self.qk_norm_k_scale = 1\n        if qk_norm and qk_norm_dim_scale:\n            self.qk_norm_q_scale = nn.Parameter(torch.ones(dim_head))\n            self.qk_norm_k_scale = nn.Parameter(torch.ones(dim_head))\n        assert (not qk_norm) or divisible_by(\n            dim_head, qk_norm_groups\n        ), \"dimension per attention head must be divisible by the qk norm groups\"\n        assert not (\n            qk_norm and (dim_head // qk_norm_groups) <= 2\n        ), \"the group dimension may be too small (2 was too small in my tests, but 4 still works, surprisingly)\"\n        # attend class - includes core attention algorithm + talking heads\n        self.attend = Attend(\n            heads=heads,\n            causal=causal,\n            talking_heads=talking_heads,\n            dropout=dropout,\n            sparse_topk=sparse_topk,\n            qk_norm=qk_norm,\n            scale=qk_norm_scale if qk_norm else self.scale,\n            add_zero_kv=add_zero_kv,",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:803-827"
+    },
+    "107": {
+        "file_id": 7,
+        "content": "This code initializes the Transformer's attention module with optional normalization for query and key dimensions, and applies the core attention algorithm. It also includes parameters for causal masking, talking heads, dropout, sparse top-k sampling, and whether to add zero vectors for keys and values.",
+        "type": "comment"
+    },
+    "108": {
+        "file_id": 7,
+        "content": "            flash=flash,\n            onnxable=onnxable,\n        )\n        # head scaling\n        self.head_scale = head_scale\n        if head_scale:\n            self.head_scale_params = nn.Parameter(torch.ones(1, heads, 1, 1))\n        # explicit topk sparse attention\n        self.sparse_topk = sparse_topk\n        # add memory key / values\n        self.num_mem_kv = num_mem_kv\n        if num_mem_kv > 0:\n            self.mem_k = nn.Parameter(torch.randn(heads, num_mem_kv, dim_head))\n            self.mem_v = nn.Parameter(torch.randn(heads, num_mem_kv, dim_head))\n        # attention on attention\n        self.attn_on_attn = on_attn\n        self.to_out = (\n            nn.Sequential(nn.Linear(out_dim, dim * 2, bias=False), nn.GLU())\n            if on_attn\n            else nn.Linear(out_dim, dim, bias=False)\n        )\n        # init output projection 0\n        if zero_init_output:\n            init_zero_(self.to_out)\n    def forward(\n        self,\n        x,\n        context=None,\n        mask=None,\n        context_mask=None,",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:828-863"
+    },
+    "109": {
+        "file_id": 7,
+        "content": "This code creates a transformer model with optional features like head scaling, sparse attention, memory key/values, and attention on attention. It initializes various layers and parameters based on provided arguments. The forward function performs the forward pass through these layers to output the final result.",
+        "type": "comment"
+    },
+    "110": {
+        "file_id": 7,
+        "content": "        attn_mask=None,\n        rel_pos=None,\n        rotary_pos_emb=None,\n        prev_attn=None,\n        mem=None,\n    ):\n        b, n, _, h, kv_h, head_scale, device, has_context = (\n            *x.shape,\n            self.heads,\n            self.kv_heads,\n            self.head_scale,\n            x.device,\n            exists(context),\n        )\n        kv_input = default(context, x)\n        q_input = x\n        k_input = kv_input\n        v_input = kv_input\n        r_input = x\n        if exists(mem):\n            k_input = torch.cat((mem, k_input), dim=-2)\n            v_input = torch.cat((mem, v_input), dim=-2)\n        q = self.to_q(q_input)\n        k = self.to_k(k_input)\n        v = self.to_v(v_input) if exists(self.to_v) else k\n        r = self.to_r(r_input) if exists(self.to_r) else None\n        q = rearrange(q, \"b n (h d) -> b h n d\", h=h)\n        k, v, r = map(\n            lambda t: maybe(rearrange)(t, \"b n (h d) -> b h n d\", h=kv_h), (k, v, r)\n        )\n        if self.qk_norm:\n            qk_l2norm = partial(l2norm, groups=self.qk_norm_groups)",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:864-901"
+    },
+    "111": {
+        "file_id": 7,
+        "content": "This function takes in a multi-dimensional tensor `x` and optional context `context`. It assigns various shapes, variables, and device information from the input. The function also handles cases where memory is passed. It then applies transformations to the input tensor `x`, splitting it into query (q), key (k), value (v), and relative position (r) inputs. The function rearranges the shape of the inputs and applies optional normalization before returning them.",
+        "type": "comment"
+    },
+    "112": {
+        "file_id": 7,
+        "content": "            q, k = map(qk_l2norm, (q, k))\n            q = q * self.qk_norm_q_scale\n            k = k * self.qk_norm_k_scale\n        if exists(rotary_pos_emb) and not has_context:\n            freqs, xpos_scale = rotary_pos_emb\n            l = freqs.shape[-1]\n            q_xpos_scale, k_xpos_scale = (\n                (xpos_scale, xpos_scale**-1.0) if exists(xpos_scale) else (1.0, 1.0)\n            )\n            (ql, qr), (kl, kr), (vl, vr) = map(\n                lambda t: (t[..., :l], t[..., l:]), (q, k, v)\n            )\n            ql, kl, vl = map(\n                lambda arg: apply_rotary_pos_emb(arg[0], freqs, arg[1]),\n                ((ql, q_xpos_scale), (kl, k_xpos_scale), (vl, k_xpos_scale)),\n            )\n            q, k, v = map(\n                lambda t: torch.cat(t, dim=-1), ((ql, qr), (kl, kr), (vl, vr))\n            )\n        input_mask = context_mask if has_context else mask\n        if self.num_mem_kv > 0:\n            mem_k, mem_v = map(\n                lambda t: repeat(t, \"h n d -> b h n d\", b=b), (self.mem_k, self.mem_v)",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:902-930"
+    },
+    "113": {
+        "file_id": 7,
+        "content": "This code performs linear attention over a set of key-value pairs (q,k,v) and optionally applies rotary position embeddings to the queries (q) and keys (k). It also handles a possible input mask and applies memory keys if mem_k and mem_v are present. The qk_norm_q_scale and qk_norm_k_scale variables are used for normalization of the queries and keys, respectively.",
+        "type": "comment"
+    },
+    "114": {
+        "file_id": 7,
+        "content": "            )\n            if self.qk_norm:\n                mem_k = l2norm(mem_k)\n                mem_k = mem_k * self.qk_norm_k_scale\n            k = torch.cat((mem_k, k), dim=-2)\n            v = torch.cat((mem_v, v), dim=-2)\n            if exists(input_mask):\n                input_mask = pad_at_dim(\n                    input_mask, (self.num_mem_kv, 0), dim=-1, value=True\n                )\n        i, j = map(lambda t: t.shape[-2], (q, k))\n        # determine masking\n        max_neg_value(q)\n        masks = []\n        final_attn_mask = None\n        if exists(input_mask):\n            input_mask = rearrange(input_mask, \"b j -> b 1 1 j\")\n            masks.append(~input_mask)\n        if exists(attn_mask):\n            assert (\n                2 <= attn_mask.ndim <= 4\n            ), \"attention mask must have greater than 2 dimensions but less than or equal to 4\"\n            if attn_mask.ndim == 2:\n                attn_mask = rearrange(attn_mask, \"i j -> 1 1 i j\")\n            elif attn_mask.ndim == 3:\n                attn_mask = rearrange(attn_mask, \"h i j -> 1 h i j\")",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:931-964"
+    },
+    "115": {
+        "file_id": 7,
+        "content": "This code section normalizes the memory keys and values based on qk_norm, concatenates them with existing keys and values, masks the attention matrix using input_mask and attn_mask, and reshapes the masks. It then prepares for the attention calculation by determining the dimensions i and j of query (q).",
+        "type": "comment"
+    },
+    "116": {
+        "file_id": 7,
+        "content": "            masks.append(~attn_mask)\n        if exists(self.max_attend_past):\n            range_q = torch.arange(j - i, j, device=device)\n            range_k = torch.arange(j, device=device)\n            dist = rearrange(range_q, \"i -> 1 1 i 1\") - rearrange(\n                range_k, \"j -> 1 1 1 j\"\n            )\n            max_attend_past_mask = dist > self.max_attend_past\n            masks.append(max_attend_past_mask)\n        if len(masks) > 0:\n            final_attn_mask = ~or_reduce(masks)\n        # prepare relative positional bias, if needed\n        attn_bias = None\n        if exists(rel_pos):\n            attn_bias = rel_pos(i, j)\n        # attention is all we need\n        out, intermediates = self.attend(\n            q, k, v, mask=final_attn_mask, attn_bias=attn_bias, prev_attn=prev_attn\n        )\n        # https://arxiv.org/abs/2208.06061 proposes to add a residual for better gradients\n        if exists(r):\n            out = out * r + out\n        # normformer scaling of heads\n        if head_scale:\n            out = out * self.head_scale_params",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:965-999"
+    },
+    "117": {
+        "file_id": 7,
+        "content": "This code performs multi-head self-attention with various masks for the transformer layer, taking into account the maximum allowed distance between query and key, applying positional bias if needed, scaling by the head_scale parameters, and incorporating a residual term suggested in a recent paper. The output is determined based on the provided inputs 'q', 'k', and 'v'.",
+        "type": "comment"
+    },
+    "118": {
+        "file_id": 7,
+        "content": "        # merge heads\n        out = rearrange(out, \"b h n d -> b n (h d)\")\n        # alphafold2 styled gating of the values\n        if exists(self.to_v_gate):\n            gates = self.to_v_gate(x)\n            out = out * gates.sigmoid()\n        # combine the heads\n        out = self.to_out(out)\n        if exists(mask):\n            mask = rearrange(mask, \"b n -> b n 1\")\n            out = out.masked_fill(~mask, 0.0)\n        return out, intermediates\nclass AttentionLayers(nn.Module):\n    def __init__(\n        self,\n        dim,\n        depth,\n        heads=8,\n        causal=False,\n        cross_attend=False,\n        only_cross=False,\n        use_scalenorm=False,\n        use_rmsnorm=False,\n        use_simple_rmsnorm=False,\n        alibi_pos_bias=False,\n        alibi_num_heads=None,\n        rel_pos_bias=False,\n        rel_pos_num_buckets=32,\n        rel_pos_max_distance=128,\n        dynamic_pos_bias=False,\n        dynamic_pos_bias_log_distance=False,\n        dynamic_pos_bias_mlp_depth=2,\n        dynamic_pos_bias_norm=False,",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:1001-1042"
+    },
+    "119": {
+        "file_id": 7,
+        "content": "The code is defining a class called `AttentionLayers` that extends `nn.Module`. This class represents a transformer attention layer, and it includes various parameters for configuring the layer's behavior (e.g., number of heads, causality, cross-attention, etc.). The code also defines a function named `to_out` which combines the layer's attention heads and applies optional gating before combining the heads. Additionally, the function includes an optional mask to prevent certain outputs from contributing to the final output. Finally, the class includes several other parameters that control additional functionalities such as normalization and dynamic positional bias.",
+        "type": "comment"
+    },
+    "120": {
+        "file_id": 7,
+        "content": "        rotary_pos_emb=False,\n        rotary_emb_dim=None,\n        rotary_xpos=False,\n        rotary_interpolation_factor=1.0,\n        rotary_xpos_scale_base=512,\n        rotary_base_rescale_factor=1.0,\n        custom_layers=None,\n        sandwich_coef=None,\n        par_ratio=None,\n        residual_attn=False,\n        cross_residual_attn=False,\n        macaron=False,\n        pre_norm=True,\n        pre_norm_has_final_norm=True,\n        gate_residual=False,\n        scale_residual=False,\n        scale_residual_constant=1.0,\n        deepnorm=False,\n        shift_tokens=0,\n        sandwich_norm=False,\n        resi_dual=False,\n        resi_dual_scale=1.0,\n        zero_init_branch_output=False,\n        layer_dropout=0.0,\n        cross_attn_tokens_dropout=0.0,\n        **kwargs,\n    ):\n        super().__init__()\n        rotary_pos_emb = rotary_pos_emb or rotary_xpos\n        ff_kwargs, kwargs = groupby_prefix_and_trim(\"ff_\", kwargs)\n        attn_kwargs, kwargs = groupby_prefix_and_trim(\"attn_\", kwargs)\n        dim_head = attn_kwargs.get(\"dim_head\", DEFAULT_DIM_HEAD)",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:1043-1076"
+    },
+    "121": {
+        "file_id": 7,
+        "content": "This code is initializing a Transformer layer in PyTorch. The function takes several parameters including rotary position embeddings, custom layers, and various other configurations. It uses the super() method to call its parent class constructor and sets some variables based on given arguments. The function also separates other key-value pairs into 'ff_' and 'attn_' groups for later usage.",
+        "type": "comment"
+    },
+    "122": {
+        "file_id": 7,
+        "content": "        self.dim = dim\n        self.depth = depth\n        self.layers = nn.ModuleList([])\n        self.has_pos_emb = rel_pos_bias or rotary_pos_emb\n        rotary_emb_dim = max(default(rotary_emb_dim, dim_head // 2), 32)\n        assert not (\n            rotary_xpos and not causal\n        ), \"rotary xpos is not compatible with bidirectional attention\"\n        self.rotary_pos_emb = (\n            RotaryEmbedding(\n                rotary_emb_dim,\n                use_xpos=rotary_xpos,\n                scale_base=rotary_xpos_scale_base,\n                interpolation_factor=rotary_interpolation_factor,\n                base_rescale_factor=rotary_base_rescale_factor,\n            )\n            if rotary_pos_emb\n            else None\n        )\n        assert not (\n            alibi_pos_bias and rel_pos_bias\n        ), \"you can only choose Alibi positional bias or T5 relative positional bias, not both\"\n        assert (\n            rel_pos_num_buckets <= rel_pos_max_distance\n        ), \"number of relative position buckets must be less than the relative position max distance\"",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:1078-1106"
+    },
+    "123": {
+        "file_id": 7,
+        "content": "This code initializes a Transformer model by setting its dimensions and depth, creating a list of layers, and handling positional embeddings. It asserts that only one type of positional bias can be chosen and checks for compatibility between rotary xpos and causal flags.",
+        "type": "comment"
+    },
+    "124": {
+        "file_id": 7,
+        "content": "        # relative positional bias\n        flash_attn = attn_kwargs.get(\"flash\", False)\n        assert (\n            int(rel_pos_bias) + int(dynamic_pos_bias) + int(alibi_pos_bias)\n        ) <= 1, \"you can only choose up to one of t5, alibi, or dynamic positional bias\"\n        self.rel_pos = None\n        if rel_pos_bias:\n            assert (\n                not flash_attn\n            ), \"flash attention not compatible with t5 relative positional bias\"\n            self.rel_pos = RelativePositionBias(\n                scale=dim_head**0.5,\n                causal=causal,\n                heads=heads,\n                num_buckets=rel_pos_num_buckets,\n                max_distance=rel_pos_max_distance,\n            )\n        elif dynamic_pos_bias:\n            assert (\n                not flash_attn\n            ), \"flash attention not compatible with dynamic positional bias\"\n            self.rel_pos = DynamicPositionBias(\n                dim=dim // 4,\n                heads=heads,\n                log_distance=dynamic_pos_bias_log_distance,",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:1108-1134"
+    },
+    "125": {
+        "file_id": 7,
+        "content": "Code adds position bias to attention scores. It checks if relative, dynamic, or T5 positional bias is chosen and assigns the corresponding RelativePositionBias or DynamicPositionBias object. Flash attention is not compatible with position biases.",
+        "type": "comment"
+    },
+    "126": {
+        "file_id": 7,
+        "content": "                depth=dynamic_pos_bias_mlp_depth,\n                norm=dynamic_pos_bias_norm,\n            )\n        elif alibi_pos_bias:\n            alibi_num_heads = default(alibi_num_heads, heads)\n            assert (\n                alibi_num_heads <= heads\n            ), \"number of ALiBi heads must be less than the total number of heads\"\n            self.rel_pos = AlibiPositionalBias(heads=alibi_num_heads, total_heads=heads)\n        # determine deepnorm and residual scale\n        if deepnorm:\n            assert (\n                scale_residual_constant == 1\n            ), \"scale residual constant is being overridden by deep norm settings\"\n            pre_norm = sandwich_norm = resi_dual = False\n            scale_residual = True\n            scale_residual_constant = (2 * depth) ** 0.25\n        assert (\n            int(sandwich_norm) + int(resi_dual)\n        ) <= 1, \"either sandwich norm or resiDual is selected, but not both\"\n        assert not (\n            not pre_norm and sandwich_norm\n        ), \"sandwich norm cannot be used when not using prenorm\"",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:1135-1160"
+    },
+    "127": {
+        "file_id": 7,
+        "content": "This code checks the configuration and initializes the transformer model components. It handles the number of heads for dynamic positional bias, alibi positional bias, deepnorm settings, pre-norm, sandwich norm, and residual scale. It ensures compatibility and proper initialization to create the final transformer architecture.",
+        "type": "comment"
+    },
+    "128": {
+        "file_id": 7,
+        "content": "        if resi_dual:\n            pre_norm = False\n        self.pre_norm = pre_norm\n        self.sandwich_norm = sandwich_norm\n        self.resi_dual = resi_dual\n        assert (\n            0 < resi_dual_scale <= 1.0\n        ), \"resiDual prenorm residual must be scaled by a factor greater than 0 and less than or equal to 1.\"\n        self.resi_dual_scale = resi_dual_scale\n        self.residual_attn = residual_attn\n        self.cross_residual_attn = cross_residual_attn\n        assert not (\n            flash_attn and (residual_attn or cross_residual_attn)\n        ), \"flash attention is not compatible with residual attention\"\n        self.cross_attend = cross_attend\n        assert (\n            int(use_scalenorm) + int(use_rmsnorm) + int(use_simple_rmsnorm)\n        ) <= 1, \"you can only use either scalenorm, rmsnorm, or simple rmsnorm\"\n        if use_scalenorm:\n            norm_class = ScaleNorm\n        elif use_rmsnorm:\n            norm_class = RMSNorm\n        elif use_simple_rmsnorm:\n            norm_class = SimpleRMSNorm",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:1162-1191"
+    },
+    "129": {
+        "file_id": 7,
+        "content": "The code is initializing the object's attributes based on input flags. It checks for valid conditions, such as ensuring that only one type of normalization method can be used and that flash attention is not combined with residual attention. The code then assigns the correct subclass of a norm layer based on the provided flag.",
+        "type": "comment"
+    },
+    "130": {
+        "file_id": 7,
+        "content": "        else:\n            norm_class = nn.LayerNorm\n        norm_fn = partial(norm_class, dim)\n        if cross_attend and not only_cross:\n            default_block = (\"a\", \"c\", \"f\")\n        elif cross_attend and only_cross:\n            default_block = (\"c\", \"f\")\n        else:\n            default_block = (\"a\", \"f\")\n        if macaron:\n            default_block = (\"f\",) + default_block\n        # zero init\n        if zero_init_branch_output:\n            attn_kwargs = {**attn_kwargs, \"zero_init_output\": True}\n            ff_kwargs = {**ff_kwargs, \"zero_init_output\": True}\n        # calculate layer block order\n        if exists(custom_layers):\n            layer_types = custom_layers\n        elif exists(par_ratio):\n            par_depth = depth * len(default_block)\n            assert 1 < par_ratio <= par_depth, \"par ratio out of range\"\n            default_block = tuple(filter(not_equals(\"f\"), default_block))\n            par_attn = par_depth // par_ratio\n            depth_cut = (\n                par_depth * 2 // 3\n            )  # 2 / 3 attention layer cutoff suggested by PAR paper",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:1192-1224"
+    },
+    "131": {
+        "file_id": 7,
+        "content": "This code sets up the layer order and parameters for a transformer model based on input arguments. It creates a LayerNorm function, determines the default block order based on cross-attention flags, adjusts the block order if macaron is set, and handles zero initialization for output if specified. If custom_layers are provided, it uses them instead of the default block order. If par_ratio is given, it calculates a partial attention layer count based on the ratio and adjusts the block order accordingly. The code also calculates a depth cutoff for the attention layers based on the PAR paper's suggestion.",
+        "type": "comment"
+    },
+    "132": {
+        "file_id": 7,
+        "content": "            par_width = (depth_cut + depth_cut // par_attn) // par_attn\n            assert (\n                len(default_block) <= par_width\n            ), \"default block is too large for par_ratio\"\n            par_block = default_block + (\"f\",) * (par_width - len(default_block))\n            par_head = par_block * par_attn\n            layer_types = par_head + (\"f\",) * (par_depth - len(par_head))\n        elif exists(sandwich_coef):\n            assert (\n                sandwich_coef > 0 and sandwich_coef <= depth\n            ), \"sandwich coefficient should be less than the depth\"\n            layer_types = (\n                (\"a\",) * sandwich_coef\n                + default_block * (depth - sandwich_coef)\n                + (\"f\",) * sandwich_coef\n            )\n        else:\n            layer_types = default_block * depth\n        self.layer_types = layer_types\n        self.num_attn_layers = len(list(filter(equals(\"a\"), layer_types)))\n        # stochastic depth\n        self.layer_dropouts = cast_tuple(layer_dropout, len(layer_types))",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:1225-1249"
+    },
+    "133": {
+        "file_id": 7,
+        "content": "This code defines the layer types for a transformer model. It uses default block, par_ratio, and sandwich coefficient to determine the structure of each layer type. If no specific configuration is given, it defaults to using the default block repeated depth times. The number of attention layers and layer dropouts are also calculated based on these configurations.",
+        "type": "comment"
+    },
+    "134": {
+        "file_id": 7,
+        "content": "        # structured dropout for cross attending\n        self.cross_attn_tokens_dropout = cross_attn_tokens_dropout\n        # calculate token shifting\n        shift_tokens = cast_tuple(shift_tokens, len(layer_types))\n        # whether it has post norm\n        self.final_norm = norm_fn() if pre_norm or resi_dual else nn.Identity()\n        # iterate and construct layers\n        for ind, (layer_type, layer_shift_tokens) in enumerate(\n            zip(self.layer_types, shift_tokens)\n        ):\n            ind == (len(self.layer_types) - 1)\n            if layer_type == \"a\":\n                layer = Attention(dim, heads=heads, causal=causal, **attn_kwargs)\n            elif layer_type == \"c\":\n                layer = Attention(dim, heads=heads, **attn_kwargs)\n            elif layer_type == \"f\":\n                layer = FeedForward(dim, **ff_kwargs)\n                layer = layer if not macaron else Scale(0.5, layer)\n            else:\n                raise Exception(f\"invalid layer type {layer_type}\")\n            if layer_shift_tokens > 0:",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:1251-1280"
+    },
+    "135": {
+        "file_id": 7,
+        "content": "The code initializes a Transformer model with structured dropout for cross attending, token shifting, and post-norm layers. It iterates through the layer types (a, c, f) to construct Attention or FeedForward layers. If the layer type is not recognized, it raises an exception. Token shifting is applied if greater than 0. The final_norm is either a normalization function or identity depending on pre_norm and resi_dual flags.",
+        "type": "comment"
+    },
+    "136": {
+        "file_id": 7,
+        "content": "                shift_range_upper = layer_shift_tokens + 1\n                shift_range_lower = -layer_shift_tokens if not causal else 0\n                layer = ShiftTokens(range(shift_range_lower, shift_range_upper), layer)\n            residual_fn = GRUGating if gate_residual else Residual\n            residual = residual_fn(\n                dim,\n                scale_residual=scale_residual,\n                scale_residual_constant=scale_residual_constant,\n            )\n            pre_branch_norm = norm_fn() if pre_norm else None\n            post_branch_norm = norm_fn() if sandwich_norm else None\n            post_main_norm = norm_fn() if not pre_norm else None\n            norms = nn.ModuleList([pre_branch_norm, post_branch_norm, post_main_norm])\n            self.layers.append(nn.ModuleList([norms, layer, residual]))\n        if deepnorm:\n            init_gain = (8 * depth) ** -0.25\n            deepnorm_init(self, init_gain)\n    def forward(\n        self,\n        x,\n        context=None,\n        mask=None,\n        context_mask=None,",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:1281-1309"
+    },
+    "137": {
+        "file_id": 7,
+        "content": "This code defines a transformer model with configurable parameters such as pre-norm, sandwich norm, residual connection scale, and deepnorm initialization. It initializes the layers and applies normalization, token shifting, and residuals.",
+        "type": "comment"
+    },
+    "138": {
+        "file_id": 7,
+        "content": "        attn_mask=None,\n        self_attn_context_mask=None,\n        mems=None,\n        return_hiddens=False,\n    ):\n        assert not (\n            self.cross_attend ^ exists(context)\n        ), \"context must be passed in if cross_attend is set to True\"\n        hiddens = []\n        layer_hiddens = []\n        intermediates = []\n        prev_attn = None\n        prev_cross_attn = None\n        mems = mems.copy() if exists(mems) else [None] * self.num_attn_layers\n        rotary_pos_emb = None\n        if exists(self.rotary_pos_emb):\n            max_rotary_emb_length = max(\n                list(map(lambda m: (m.shape[1] if exists(m) else 0) + x.shape[1], mems))\n            )\n            rotary_pos_emb = self.rotary_pos_emb(max_rotary_emb_length, x.device)\n        outer_residual = x * self.resi_dual_scale\n        for ind, (layer_type, (norm, block, residual_fn), layer_dropout) in enumerate(\n            zip(self.layer_types, self.layers, self.layer_dropouts)\n        ):\n            ind == (len(self.layers) - 1)\n            if self.training and layer_dropout > 0.0 and random() < layer_dropout:",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:1310-1342"
+    },
+    "139": {
+        "file_id": 7,
+        "content": "This code defines a transformer layer in the Gemini framework, where it checks if context is passed when cross_attend flag is set. It initializes empty lists for hiddens, layer_hiddens, and intermediates. It copies mems, sets prev_attn and prev_cross_attn to None, and prepares rotary_pos_emb. Then it performs a residual connection on the input x with resi_dual_scale. Finally, it iterates over layers, checking if layer_dropout is non-zero during training and drops the layer with a certain probability.",
+        "type": "comment"
+    },
+    "140": {
+        "file_id": 7,
+        "content": "                continue\n            if layer_type == \"a\":\n                if return_hiddens:\n                    hiddens.append(x)\n                layer_mem = mems.pop(0) if mems else None\n            if layer_type == \"c\":\n                if self.training and self.cross_attn_tokens_dropout > 0.0:\n                    context, context_mask = dropout_seq(\n                        context, context_mask, self.cross_attn_tokens_dropout\n                    )\n            inner_residual = x\n            if return_hiddens:\n                layer_hiddens.append(x)\n            pre_norm, post_branch_norm, post_main_norm = norm\n            if exists(pre_norm):\n                x = pre_norm(x)\n            if layer_type == \"a\":\n                out, inter = block(\n                    x,\n                    mask=mask,\n                    context_mask=self_attn_context_mask,\n                    attn_mask=attn_mask,\n                    rel_pos=self.rel_pos,\n                    rotary_pos_emb=rotary_pos_emb,\n                    prev_attn=prev_attn,",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:1343-1374"
+    },
+    "141": {
+        "file_id": 7,
+        "content": "This code performs a series of transformer layer operations, such as handling different layer types (\"a\" and \"c\"), applying dropout to the context sequence, and optionally storing hidden states. It also includes layer-specific normalization steps before passing the input through a block function.",
+        "type": "comment"
+    },
+    "142": {
+        "file_id": 7,
+        "content": "                    mem=layer_mem,\n                )\n            elif layer_type == \"c\":\n                out, inter = block(\n                    x,\n                    context=context,\n                    mask=mask,\n                    context_mask=context_mask,\n                    prev_attn=prev_cross_attn,\n                )\n            elif layer_type == \"f\":\n                out = block(x)\n            if self.resi_dual:\n                outer_residual = outer_residual + out * self.resi_dual_scale\n            if exists(post_branch_norm):\n                out = post_branch_norm(out)\n            x = residual_fn(out, inner_residual)\n            if layer_type in (\"a\", \"c\") and return_hiddens:\n                intermediates.append(inter)\n            if layer_type == \"a\" and self.residual_attn:\n                prev_attn = inter.pre_softmax_attn\n            elif layer_type == \"c\" and self.cross_residual_attn:\n                prev_cross_attn = inter.pre_softmax_attn\n            if exists(post_main_norm):\n                x = post_main_norm(x)",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:1375-1405"
+    },
+    "143": {
+        "file_id": 7,
+        "content": "This code handles different layer types in a transformer model. It applies blocks for attention, feedforward networks, and optional residual connections. Intermediates are stored if required, and post-layer normalization is applied if present. Previous attention values are updated accordingly for specific layer types.",
+        "type": "comment"
+    },
+    "144": {
+        "file_id": 7,
+        "content": "        if return_hiddens:\n            layer_hiddens.append(x)\n        if self.resi_dual:\n            x = x + self.final_norm(outer_residual)\n        else:\n            x = self.final_norm(x)\n        if return_hiddens:\n            intermediates = LayerIntermediates(\n                hiddens=hiddens,\n                attn_intermediates=intermediates,\n                layer_hiddens=layer_hiddens,\n            )\n            return x, intermediates\n        return x\nclass Encoder(AttentionLayers):\n    def __init__(self, **kwargs):\n        assert \"causal\" not in kwargs, \"cannot set causality on encoder\"\n        super().__init__(causal=False, **kwargs)\nclass Decoder(AttentionLayers):\n    def __init__(self, **kwargs):\n        assert \"causal\" not in kwargs, \"cannot set causality on decoder\"\n        super().__init__(causal=True, **kwargs)\nclass CrossAttender(AttentionLayers):\n    def __init__(self, **kwargs):\n        super().__init__(cross_attend=True, only_cross=True, **kwargs)\nclass ViTransformerWrapper(nn.Module):\n    def __init__(",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:1407-1445"
+    },
+    "145": {
+        "file_id": 7,
+        "content": "The code defines classes for Encoder, Decoder, CrossAttender, and ViTransformerWrapper. Encoders and Decoders are initialized with causal set to False and True respectively. CrossAttender is initialized with cross_attend and only_cross set to True. ViTransformerWrapper is a nn.Module that wraps these classes for use in vision transformers.",
+        "type": "comment"
+    },
+    "146": {
+        "file_id": 7,
+        "content": "        self,\n        *,\n        image_size,\n        patch_size,\n        attn_layers,\n        channels=3,\n        num_classes=None,\n        post_emb_norm=False,\n        emb_dropout=0.0,\n    ):\n        super().__init__()\n        assert isinstance(attn_layers, Encoder), \"attention layers must be an Encoder\"\n        assert divisible_by(\n            image_size, patch_size\n        ), \"image dimensions must be divisible by the patch size\"\n        dim = attn_layers.dim\n        num_patches = (image_size // patch_size) ** 2\n        patch_dim = channels * patch_size**2\n        self.patch_size = patch_size\n        self.pos_embedding = nn.Parameter(torch.randn(1, num_patches, dim))\n        self.patch_to_embedding = nn.Sequential(\n            nn.LayerNorm(patch_dim), nn.Linear(patch_dim, dim), nn.LayerNorm(dim)\n        )\n        self.post_emb_norm = nn.LayerNorm(dim) if post_emb_norm else nn.Identity()\n        self.dropout = nn.Dropout(emb_dropout)\n        self.attn_layers = attn_layers\n        self.mlp_head = (\n            nn.Linear(dim, num_classes) if exists(num_classes) else nn.Identity()",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:1446-1479"
+    },
+    "147": {
+        "file_id": 7,
+        "content": "This code is initializing a Transformer model with specified parameters. It checks the input arguments, creates necessary layers like position embedding, patch to embedding, and attention layers. Additionally, it handles dropout and normalization based on provided settings.",
+        "type": "comment"
+    },
+    "148": {
+        "file_id": 7,
+        "content": "        )\n    def forward(self, img, return_embeddings=False):\n        p = self.patch_size\n        x = rearrange(img, \"b c (h p1) (w p2) -> b (h w) (p1 p2 c)\", p1=p, p2=p)\n        x = self.patch_to_embedding(x)\n        n = x.shape[1]\n        x = x + self.pos_embedding[:, :n]\n        x = self.post_emb_norm(x)\n        x = self.dropout(x)\n        x = self.attn_layers(x)\n        if not exists(self.mlp_head) or return_embeddings:\n            return x\n        x = x.mean(dim=-2)\n        return self.mlp_head(x)\nclass Transformer(nn.Module):\n    def __init__(\n        self,\n        *,\n        num_tokens,\n        max_seq_len,\n        attn_layers,\n        emb_dim=None,\n        max_mem_len=0,\n        shift_mem_down=0,\n        emb_dropout=0.0,\n        post_emb_norm=False,\n        num_memory_tokens=None,\n        tie_embedding=False,\n        logits_dim=None,\n        use_abs_pos_emb=True,\n        scaled_sinu_pos_emb=False,\n        l2norm_embed=False,\n        emb_frac_gradient=1.0,  # GLM-130B and Cogview successfully used this, set at 0.1",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:1480-1521"
+    },
+    "149": {
+        "file_id": 7,
+        "content": "The code defines a Transformer class for image processing tasks. It takes an image and performs patch-based embedding, position embedding, and self-attention layers to generate a feature map. The feature map can be optionally passed through an MLP head for classification or regression tasks. The code also includes various parameters and options for customization such as embedding dimensions, normalization, dropout rates, and type of positional embeddings.",
+        "type": "comment"
+    },
+    "150": {
+        "file_id": 7,
+        "content": "        attn_z_loss_weight=1e-4,\n    ):\n        super().__init__()\n        assert isinstance(\n            attn_layers, AttentionLayers\n        ), \"attention layers must be one of Encoder or Decoder\"\n        dim = attn_layers.dim\n        emb_dim = default(emb_dim, dim)\n        self.emb_dim = emb_dim\n        self.num_tokens = num_tokens\n        self.max_seq_len = max_seq_len\n        self.max_mem_len = max_mem_len\n        self.shift_mem_down = shift_mem_down\n        self.l2norm_embed = l2norm_embed\n        self.token_emb = TokenEmbedding(emb_dim, num_tokens, l2norm_embed=l2norm_embed)\n        if not (use_abs_pos_emb and not attn_layers.has_pos_emb):\n            self.pos_emb = always(0)\n        elif scaled_sinu_pos_emb:\n            self.pos_emb = ScaledSinusoidalEmbedding(emb_dim)\n        else:\n            self.pos_emb = AbsolutePositionalEmbedding(\n                emb_dim, max_seq_len, l2norm_embed=l2norm_embed\n            )\n        self.emb_frac_gradient = emb_frac_gradient  # fraction of the gradient that should go to the embedding, https://arxiv.org/abs/2105.13290",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:1522-1550"
+    },
+    "151": {
+        "file_id": 7,
+        "content": "This code initializes a class object with given parameters. It checks the type of attention layers and sets embedding and positional embeddings based on provided arguments, while considering the gradient flow to the embedding layer.",
+        "type": "comment"
+    },
+    "152": {
+        "file_id": 7,
+        "content": "        self.post_emb_norm = nn.LayerNorm(emb_dim) if post_emb_norm else nn.Identity()\n        self.emb_dropout = nn.Dropout(emb_dropout)\n        self.project_emb = nn.Linear(emb_dim, dim) if emb_dim != dim else nn.Identity()\n        self.attn_layers = attn_layers\n        self.init_()\n        logits_dim = default(logits_dim, num_tokens)\n        self.to_logits = (\n            nn.Linear(dim, logits_dim)\n            if not tie_embedding\n            else lambda t: t @ self.token_emb.emb.weight.t()\n        )\n        # memory tokens (like [cls]) from Memory Transformers paper\n        num_memory_tokens = default(num_memory_tokens, 0)\n        self.num_memory_tokens = num_memory_tokens\n        if num_memory_tokens > 0:\n            self.memory_tokens = nn.Parameter(torch.randn(num_memory_tokens, dim))\n    def init_(self):\n        if self.l2norm_embed:\n            nn.init.normal_(self.token_emb.emb.weight, std=1e-5)\n            if not isinstance(self.pos_emb, always):\n                nn.init.normal_(self.pos_emb.emb.weight, std=1e-5)",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:1552-1577"
+    },
+    "153": {
+        "file_id": 7,
+        "content": "The code creates a Transformer model with optional embedding normalization, dropout, and projection. It also includes a linear layer to convert embeddings to logits and supports memory tokens for Memory Transformers paper. The `init_` function initializes the weights of the token and positional embeddings if l2norm_embed is True.",
+        "type": "comment"
+    },
+    "154": {
+        "file_id": 7,
+        "content": "            return\n        nn.init.kaiming_normal_(self.token_emb.emb.weight)\n    def forward(\n        self,\n        x,\n        return_embeddings=False,\n        return_logits_and_embeddings=False,\n        return_intermediates=False,\n        mask=None,\n        return_mems=False,\n        return_attn=False,\n        mems=None,\n        pos=None,\n        prepend_embeds=None,\n        sum_embeds=None,\n        return_attn_z_loss=False,\n        attn_z_loss_weight=1e-4,\n        **kwargs,\n    ):\n        b, n, device, num_mem, emb_frac_gradient = (\n            *x.shape,\n            x.device,\n            self.num_memory_tokens,\n            self.emb_frac_gradient,\n        )\n        return_hiddens = (\n            return_mems | return_attn | return_intermediates | return_attn_z_loss\n        )\n        # absolute positional embedding\n        external_pos_emb = exists(pos) and pos.dtype != torch.long\n        pos_emb = self.pos_emb(x, pos=pos) if not external_pos_emb else pos\n        x = self.token_emb(x) + pos_emb\n        # for summing embeddings passed externally - needs this for self-conditioning in non-autoregressive training",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:1578-1615"
+    },
+    "155": {
+        "file_id": 7,
+        "content": "This code defines a function for a transformer model's forward pass. It takes input tensor `x`, performs token embedding and positional embedding, and adds them together. The function also supports returning intermediate outputs (mems, attn) and an optional attention loss term. The function uses device-specific operations, checks if external position embeddings are used, and handles summing external embeddings for self-conditioning in non-autoregressive training.",
+        "type": "comment"
+    },
+    "156": {
+        "file_id": 7,
+        "content": "        if exists(sum_embeds):\n            x = x + sum_embeds\n        # post embedding norm, purportedly leads to greater stabilization\n        x = self.post_emb_norm(x)\n        # whether to append embeds, as in PaLI, for image embeddings\n        if exists(prepend_embeds):\n            prepend_seq, prepend_dim = prepend_embeds.shape[1:]\n            assert (\n                prepend_dim == x.shape[-1]\n            ), \"prepended embeddings need to have same dimensions as text model dimensions\"\n            x = torch.cat((prepend_embeds, x), dim=-2)\n        # whether to reduce the gradient going to the embedding, from cogview paper, corroborated by GLM-130B model\n        if emb_frac_gradient < 1:\n            assert emb_frac_gradient > 0\n            x = x * emb_frac_gradient + x.detach() * (1 - emb_frac_gradient)\n        # embedding dropout\n        x = self.emb_dropout(x)\n        x = self.project_emb(x)\n        if num_mem > 0:\n            mem = repeat(self.memory_tokens, \"n d -> b n d\", b=b)\n            x = torch.cat((mem, x), dim=1)",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:1617-1648"
+    },
+    "157": {
+        "file_id": 7,
+        "content": "This code applies post-embedding normalization, prepends image embeddings if needed, reduces embedding gradient flow, applies embedding dropout, and projects the embeddings. It also optionally concatenates memory tokens for a specified number of memories.",
+        "type": "comment"
+    },
+    "158": {
+        "file_id": 7,
+        "content": "            # auto-handle masking after appending memory tokens\n            if exists(mask):\n                mask = pad_at_dim(mask, (num_mem, 0), dim=-1, value=True)\n        if self.shift_mem_down and exists(mems):\n            mems_l, mems_r = mems[: self.shift_mem_down], mems[self.shift_mem_down :]\n            mems = [*mems_r, *mems_l]\n        if return_hiddens:\n            x, intermediates = self.attn_layers(\n                x, mask=mask, mems=mems, return_hiddens=True, **kwargs\n            )\n        else:\n            x = self.attn_layers(x, mask=mask, mems=mems, **kwargs)\n        mem, x = x[:, :num_mem], x[:, num_mem:]\n        if return_logits_and_embeddings:\n            out = (self.to_logits(x), x)\n        elif return_embeddings:\n            out = x\n        else:\n            out = self.to_logits(x)\n        if return_attn_z_loss:\n            pre_softmax_attns = list(\n                map(lambda t: t.pre_softmax_attn, intermediates.attn_intermediates)\n            )\n            intermediates.attn_z_loss = calc_z_loss(",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:1650-1678"
+    },
+    "159": {
+        "file_id": 7,
+        "content": "This code appears to be part of a Transformer model implementation, specifically handling masking and returning various outputs based on the function parameters. It handles masking for attention, shifts memory tokens down if required, applies the attention layers, and generates different output types such as logits, embeddings, or both, depending on the return arguments. Additionally, it calculates an attention loss term called 'attn_z_loss' based on pre-softmax attention values.",
+        "type": "comment"
+    },
+    "160": {
+        "file_id": 7,
+        "content": "                pre_softmax_attns, weight=attn_z_loss_weight\n            )\n            return_intermediates = True\n        if return_intermediates:\n            return out, intermediates\n        if return_mems:\n            hiddens = intermediates.hiddens\n            new_mems = (\n                list(map(lambda pair: torch.cat(pair, dim=-2), zip(mems, hiddens)))\n                if exists(mems)\n                else hiddens\n            )\n            new_mems = list(\n                map(lambda t: t[..., -self.max_mem_len :, :].detach(), new_mems)\n            )\n            return out, new_mems\n        if return_attn:\n            attn_maps = list(\n                map(lambda t: t.post_softmax_attn, intermediates.attn_intermediates)\n            )\n            return out, attn_maps\n        return out",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:1679-1704"
+    },
+    "161": {
+        "file_id": 7,
+        "content": "This code defines a function that processes the output of an attention mechanism in a transformer model. It accepts options to return different intermediate outputs, such as the pre-softmax attention weights, memory states, or attention maps. If no option is specified, it only returns the final output.",
+        "type": "comment"
+    },
+    "162": {
+        "file_id": 8,
+        "content": "/gemini_torch/utils.py",
+        "type": "filepath"
+    },
+    "163": {
+        "file_id": 8,
+        "content": "The ImageToTextEmbeddings class transforms images into text tokens using patch-based embedding, while the AudioToEmbeddings class is a neural network module that takes in an audio sequence and outputs embeddings. Both classes process input data, generate tokens, and match desired sequence length and dimension.",
+        "type": "summary"
+    },
+    "164": {
+        "file_id": 8,
+        "content": "from einops import rearrange, reduce\nfrom torch import nn\nclass ImageToTextEmbeddings(nn.Module):\n    \"\"\"\n    Converts images into text tokens using patch-based embedding.\n    Args:\n        patch_size (int): The size of each patch in the image.\n        dim (int): The dimension of the embedding for each patch.\n        seq_len (int): The desired sequence length of the text tokens.\n    Returns:\n        torch.Tensor: The text tokens representing the input images.\n    \"\"\"\n    def __init__(self, patch_size, dim, seq_len):\n        super().__init__()\n        self.patch_size = patch_size\n        self.dim = dim\n        self.seq_len = seq_len\n        self.projection = nn.Linear(patch_size * patch_size * 3, dim)\n        # self.seq_proj = nn.Linear(dim, seq_len)\n    def forward(self, images):\n        # Input images are assumed to be in the shape (batch_size, channels, height, width)\n        batch_size, _, height, width = images.shape\n        seq_proj = nn.Linear(height, self.seq_len)\n        # Ensure that the image dimensions are divisible by the patch size",
+        "type": "code",
+        "location": "/gemini_torch/utils.py:1-32"
+    },
+    "165": {
+        "file_id": 8,
+        "content": "The code defines a class `ImageToTextEmbeddings` which converts images into text tokens using patch-based embedding. It takes the image size, dimension for each patch, and desired sequence length as inputs. The forward method processes the input images by applying a projection layer and a sequential projection layer to create text tokens.",
+        "type": "comment"
+    },
+    "166": {
+        "file_id": 8,
+        "content": "        assert height % self.patch_size == 0 and width % self.patch_size == 0, \\\n            \"Image dimensions must be divisible by the patch size\"\n        # Rearrange the images into patches using einops\n        patches = rearrange(images, 'b c (h p1) (w p2) -> b (h w) (p1 p2 c)', p1=self.patch_size, p2=self.patch_size)\n        # Project the patches into the embedding dimension\n        embeddings = self.projection(patches)\n        # Reshape the embeddings into the shape (batch_size, seq_len, dim)\n        seq_len = (height // self.patch_size) * (width // self.patch_size)\n        text_tokens = rearrange(embeddings, 'b (h w) e -> b h w e', h=seq_len, w=1)\n        text_tokens = reduce(text_tokens, \"b h w e -> b h (w e)\", \"mean\")\n        # Project the embeddings into the sequence length, in the 2nd dimension\n        text_tokens = rearrange(text_tokens, \"b h d -> b d h\", h=seq_len)\n        text_tokens = seq_proj(text_tokens)\n        text_tokens = rearrange(text_tokens, \"b d h -> b h d\")\n        return text_tokens",
+        "type": "code",
+        "location": "/gemini_torch/utils.py:33-52"
+    },
+    "167": {
+        "file_id": 8,
+        "content": "This code segment receives images and processes them to create text tokens. It first checks if image dimensions are divisible by the patch size, then rearranges the images into patches using einops. The patches are projected into embedding dimension, reshaped, and reduced to obtain text tokens. Finally, these tokens are projected again to match the desired sequence length before being returned.",
+        "type": "comment"
+    },
+    "168": {
+        "file_id": 8,
+        "content": "# x = torch.randn(1, 3, 64, 64)\n# model = ImageToTextEmbeddings(patch_size=8, dim=512, seq_len=128)\n# y = model(x)\n# print(y.shape)  # Should be [1, 64, 512]\nclass AudioToEmbeddings(nn.Module):\n    \"\"\"AudioToEmbeddings\n    Args:\n        audio_seq_len (int): Length of the audio sequence\n        seqlen (int): Length of the sequence\n        dim (int): Embedding dimension\n    Example:\n        >>> import torch\n        >>> from geminix import AudioToEmbeddings\n        >>> model = AudioToEmbeddings(\n        ...     audio_seq_len=32000,\n        ...     seqlen=512,\n        ...     dim=512\n        ... )\n        >>> x = torch.randn(1, 32000)\n        >>> y = model(x)\n        >>> y.shape\n        torch.Size([1, 512, 512])\n    \"\"\"\n    def __init__(self, audio_seq_len: int, seqlen: int, dim: int):\n        super(AudioToEmbeddings, self).__init__()\n        self.audio_seq_len = audio_seq_len\n        self.seqlen = seqlen\n        self.dim = dim\n        # Initialize a linear layer to project the 2D audio input to the desired 3D shape\n        self.projection = nn.Linear(audio_seq_len, seqlen * dim)",
+        "type": "code",
+        "location": "/gemini_torch/utils.py:54-88"
+    },
+    "169": {
+        "file_id": 8,
+        "content": "The AudioToEmbeddings class is a neural network module that takes in an audio sequence and outputs embeddings. It initializes a linear layer to project the 2D audio input to the desired 3D shape, with the number of dimensions (dim) being 512. The class parameters include audio_seq_len for the length of the audio sequence, seqlen for the length of the output sequence, and dim for the dimension of the embedding.",
+        "type": "comment"
+    },
+    "170": {
+        "file_id": 8,
+        "content": "    def forward(self, x):\n        \"\"\"Forward pass\n        Args:\n            x (_type_): _description_\n        Returns:\n            _type_: _description_\n        \"\"\"\n        # x shape: [batch, audio_seq_len] - 2D input\n        batch, audio_seq_len = x.shape\n        # Project the audio tensor to match the seqlen and dim\n        x = self.projection(x)  # x shape: [batch, seqlen * dim]\n        # Reshape to the target shape: [batch, seqlen, dim]\n        x = rearrange(x, \"b (s d) -> b s d\", s=self.seqlen, d=self.dim)\n        return x",
+        "type": "code",
+        "location": "/gemini_torch/utils.py:90-108"
+    },
+    "171": {
+        "file_id": 8,
+        "content": "This function performs a forward pass on the input tensor `x`. It first projects the audio tensor to match the target sequence length and dimension, then reshapes it into the desired shape. The resulting tensor is of size [batch, seqlen, dim].",
+        "type": "comment"
+    },
+    "172": {
+        "file_id": 9,
+        "content": "/tests/test_audio_embedder.py",
+        "type": "filepath"
+    },
+    "173": {
+        "file_id": 9,
+        "content": "The code tests the audio embedding function's behavior in various scenarios, including handling edge cases and ensuring output integrity with regards to input shape, device compatibility, batch sizes, and checking output shapes when dim is less than or greater than seqlen.",
+        "type": "summary"
+    },
+    "174": {
+        "file_id": 9,
+        "content": "import torch\nimport pytest\nfrom gemini_torch.utils import AudioToEmbeddings\n@pytest.fixture\ndef audio_embedding():\n    audio_seq_len = 32000\n    seqlen = 512\n    dim = 512\n    return AudioToEmbeddings(audio_seq_len, seqlen, dim)\ndef test_forward_pass(audio_embedding):\n    # Test the forward pass with a random input\n    batch_size = 2\n    input_audio = torch.randn(batch_size, audio_embedding.audio_seq_len)\n    output = audio_embedding(input_audio)\n    assert output.shape == (batch_size, audio_embedding.seqlen, audio_embedding.dim)\ndef test_device_placement(audio_embedding):\n    # Test if the model and input/output tensors are on the same device\n    input_audio = torch.randn(1, audio_embedding.audio_seq_len)\n    output = audio_embedding(input_audio)\n    assert input_audio.device == output.device\n    assert input_audio.device == audio_embedding.projection.weight.device\ndef test_output_shape(audio_embedding):\n    # Test if the output shape matches the expected shape\n    input_audio = torch.randn(1, audio_embedding.audio_seq_len)",
+        "type": "code",
+        "location": "/tests/test_audio_embedder.py:1-32"
+    },
+    "175": {
+        "file_id": 9,
+        "content": "Test forward pass of AudioToEmbeddings model with random audio input, ensuring correct output shape. Test if the model and tensors are on the same device. Check if output shape matches expected shape.",
+        "type": "comment"
+    },
+    "176": {
+        "file_id": 9,
+        "content": "    output = audio_embedding(input_audio)\n    assert output.shape == (1, audio_embedding.seqlen, audio_embedding.dim)\ndef test_batch_processing(audio_embedding):\n    # Test batch processing by passing a batch of input tensors\n    batch_size = 4\n    input_audio = torch.randn(batch_size, audio_embedding.audio_seq_len)\n    output = audio_embedding(input_audio)\n    assert output.shape == (batch_size, audio_embedding.seqlen, audio_embedding.dim)\ndef test_zero_input(audio_embedding):\n    # Test with zero input\n    input_audio = torch.zeros(1, audio_embedding.audio_seq_len)\n    output = audio_embedding(input_audio)\n    assert torch.all(output == 0)\ndef test_negative_input(audio_embedding):\n    # Test with negative input values\n    input_audio = torch.randn(1, audio_embedding.audio_seq_len) - 2.0\n    output = audio_embedding(input_audio)\n    assert torch.all(output < 0)\ndef test_large_input(audio_embedding):\n    # Test with large input values\n    input_audio = torch.randn(1, audio_embedding.audio_seq_len) * 100.0\n    output = audio_embedding(input_audio)",
+        "type": "code",
+        "location": "/tests/test_audio_embedder.py:33-62"
+    },
+    "177": {
+        "file_id": 9,
+        "content": "This code tests the audio embedding function in various scenarios such as batch processing, zero input, negative input, and large input to ensure correct behavior and handle edge cases.",
+        "type": "comment"
+    },
+    "178": {
+        "file_id": 9,
+        "content": "    assert torch.all(output > 0)\ndef test_input_shape_mismatch(audio_embedding):\n    # Test if an error is raised for an input shape mismatch\n    with pytest.raises(torch.nn.modules.module.ModuleAttributeError):\n        input_audio = torch.randn(1, audio_embedding.audio_seq_len + 1)\n        audio_embedding(input_audio)\ndef test_output_device(audio_embedding):\n    # Test if the output device matches the expected device\n    input_audio = torch.randn(1, audio_embedding.audio_seq_len).to(\"cuda\")\n    audio_embedding.to(\"cuda\")\n    output = audio_embedding(input_audio)\n    assert output.device == torch.device(\"cuda\")\ndef test_large_batch_size(audio_embedding):\n    # Test with a large batch size\n    batch_size = 1024\n    input_audio = torch.randn(batch_size, audio_embedding.audio_seq_len)\n    output = audio_embedding(input_audio)\n    assert output.shape == (batch_size, audio_embedding.seqlen, audio_embedding.dim)\ndef test_small_batch_size(audio_embedding):\n    # Test with a small batch size (1)\n    input_audio = torch.randn(1, audio_embedding.audio_seq_len)",
+        "type": "code",
+        "location": "/tests/test_audio_embedder.py:63-91"
+    },
+    "179": {
+        "file_id": 9,
+        "content": "This code contains five test functions for the audio_embedding model. The first function checks if the output is always greater than 0, the second raises an error for an input shape mismatch, the third ensures the output device matches the expected device, and the last two tests the model with large and small batch sizes respectively.",
+        "type": "comment"
+    },
+    "180": {
+        "file_id": 9,
+        "content": "    output = audio_embedding(input_audio)\n    assert output.shape == (1, audio_embedding.seqlen, audio_embedding.dim)\ndef test_audio_seq_len_equal_seqlen(audio_embedding):\n    # Test when audio_seq_len is equal to seqlen\n    audio_seq_len = seqlen = 512\n    dim = 512\n    audio_embedding = AudioToEmbeddings(audio_seq_len, seqlen, dim)\n    input_audio = torch.randn(1, audio_seq_len)\n    output = audio_embedding(input_audio)\n    assert output.shape == (1, seqlen, dim)\ndef test_audio_seq_len_less_than_seqlen(audio_embedding):\n    # Test when audio_seq_len is less than seqlen\n    audio_seq_len = 256\n    seqlen = 512\n    dim = 512\n    audio_embedding = AudioToEmbeddings(audio_seq_len, seqlen, dim)\n    input_audio = torch.randn(1, audio_seq_len)\n    output = audio_embedding(input_audio)\n    assert output.shape == (1, seqlen, dim)\ndef test_audio_seq_len_greater_than_seqlen(audio_embedding):\n    # Test when audio_seq_len is greater than seqlen\n    audio_seq_len = 1024\n    seqlen = 512\n    dim = 512\n    audio_embedding = AudioToEmbeddings(audio_seq_len, seqlen, dim)",
+        "type": "code",
+        "location": "/tests/test_audio_embedder.py:92-122"
+    },
+    "181": {
+        "file_id": 9,
+        "content": "This code is testing the AudioToEmbeddings class with different values of audio_seq_len, seqlen and dim. The tests ensure that the output shape of the class is correct based on the given parameters.",
+        "type": "comment"
+    },
+    "182": {
+        "file_id": 9,
+        "content": "    input_audio = torch.randn(1, audio_seq_len)\n    output = audio_embedding(input_audio)\n    assert output.shape == (1, seqlen, dim)\ndef test_dim_less_than_seqlen(audio_embedding):\n    # Test when dim is less than seqlen\n    audio_seq_len = 32000\n    seqlen = 512\n    dim = 256\n    audio_embedding = AudioToEmbeddings(audio_seq_len, seqlen, dim)\n    input_audio = torch.randn(1, audio_seq_len)\n    output = audio_embedding(input_audio)\n    assert output.shape == (1, seqlen, dim)\ndef test_dim_greater_than_seqlen(audio_embedding):\n    # Test when dim is greater than seqlen\n    audio_seq_len = 32000\n    seqlen = 512\n    dim = 1024\n    audio_embedding = AudioToEmbeddings(audio_seq_len, seqlen, dim)\n    input_audio = torch.randn(1, audio_seq_len)\n    output = audio_embedding(input_audio)\n    assert output.shape == (1, seqlen, dim)",
+        "type": "code",
+        "location": "/tests/test_audio_embedder.py:123-147"
+    },
+    "183": {
+        "file_id": 9,
+        "content": "These tests check the shape of the output when dim is less than or greater than seqlen. In the first test, audio_embedding takes input_audio and outputs a tensor with shape (1, seqlen, dim). In the second test, it checks if the output shape remains the same even when dim is larger than seqlen.",
+        "type": "comment"
+    },
+    "184": {
+        "file_id": 10,
+        "content": "/tests/test_gemini.py",
+        "type": "filepath"
+    },
+    "185": {
+        "file_id": 10,
+        "content": "Both comments discuss test functions for the Gemini model in the Gemini_Torch library, covering topics such as parameter initialization, forward pass with/without text input, invalid input shape, image input, output sequence length, output values range, high-dimensional input, performance with typical data, model robustness to random dropout, and serialization/deserialization. Pytest is used for execution and exception handling in the tests. The first function checks deep copying of the model, while the second one tests error handling during forward pass with invalid input shape.",
+        "type": "summary"
+    },
+    "186": {
+        "file_id": 10,
+        "content": "import unittest\nimport copy\nimport pytest\nimport torch\nfrom gemini_torch.model import Gemini\n# Fixture for model initialization\n@pytest.fixture\ndef gemini_model():\n    return Gemini()\n# Test for default parameter initialization\ndef test_init_default_params(gemini_model):\n    assert isinstance(gemini_model, Gemini), \"Model is not an instance of Gemini\"\n# Test for forward pass with only text input\ndef test_forward_text_input_only(gemini_model):\n    text_input = torch.randn(1, 50432, 2560)  # Adjust dimensions as necessary\n    output = gemini_model(text=text_input)\n    assert output is not None, \"Output should not be None\"\n    assert output.shape == (1, 50432, 2560), f\"Unexpected output shape: {output.shape}\"\n# Test for invalid text input shape\ndef test_invalid_text_input_shape(gemini_model):\n    with pytest.raises(\n        Exception\n    ):  # Replace Exception with the specific expected exception\n        invalid_text_input = torch.randn(1, 1, 1)  # Deliberately wrong shape\n        _ = gemini_model(text=invalid_text_input)",
+        "type": "code",
+        "location": "/tests/test_gemini.py:1-34"
+    },
+    "187": {
+        "file_id": 10,
+        "content": "This code snippet contains tests for a model called \"Gemini\" in the Gemini_Torch library. The tests cover default parameter initialization, forward pass with only text input, and invalid text input shape. The code uses fixtures to initialize the model instance and asserts against expected conditions using assert statements. Pytest is used for test execution and exception handling.",
+        "type": "comment"
+    },
+    "188": {
+        "file_id": 10,
+        "content": "class TestGemini(unittest.TestCase):\n    def setUp(self):\n        self.gemini = Gemini()\n        self.text = torch.randn(\n            1, 8192, 2560\n        )  # batch size = 1, seq_len = 8192, dim = 2560\n        self.img = torch.randn(\n            1, 3, 256, 256\n        )  # batch size = 1, channels = 3, height = 256, width = 256\n    def test_initialization(self):\n        self.assertIsInstance(self.gemini, Gemini)\n    def test_forward_with_img(self):\n        output = self.gemini(self.text, self.img)\n        self.assertIsInstance(output, torch.Tensor)\n        self.assertEqual(\n            output.shape, (1, 8192, 2560)\n        )  # batch size = 1, seq_len = 8192, dim = 2560\n    def test_forward_without_img(self):\n        output = self.gemini(self.text)\n        self.assertIsInstance(output, torch.Tensor)\n        self.assertEqual(\n            output.shape, (1, 8192, 2560)\n        )  # batch size = 1, seq_len = 8192, dim = 2560\ndef test_forward_img_input_only(gemini_model):\n    img_input = torch.randn(1, 3, 64, 64)  # Assuming 64x64 is the appropriate size",
+        "type": "code",
+        "location": "/tests/test_gemini.py:37-66"
+    },
+    "189": {
+        "file_id": 10,
+        "content": "Test class for Gemini module, initializes objects and checks forward pass with/without image input.\n\nThe code creates a test class for the Gemini module, which initializes necessary objects for testing, including Gemini, torch tensors for text and image, and performs checks on the forward pass of the Gemini model with or without an image input. The tests ensure that the output of the forward pass is a tensor with the expected shape.",
+        "type": "comment"
+    },
+    "190": {
+        "file_id": 10,
+        "content": "    output = gemini_model(img=img_input)\n    assert output is not None, \"Output should not be None\"\n    # Add more assertions to verify output shape and other characteristics\ndef test_forward_both_inputs(gemini_model):\n    text_input = torch.randn(1, 50432, 2560)\n    img_input = torch.randn(1, 3, 64, 64)\n    output = gemini_model(text=text_input, img=img_input)\n    assert output is not None, \"Output should not be None\"\n    # Add more assertions as needed\ndef test_model_with_max_seq_len(gemini_model):\n    text_input = torch.randn(1, 8192, 2560)  # Assuming 8192 is the max sequence length\n    output = gemini_model(text=text_input)\n    assert (\n        output.shape[1] == 8192\n    ), \"Output sequence length does not match max sequence length\"\ndef test_forward_output_values_range(gemini_model):\n    text_input = torch.randn(1, 50432, 2560)\n    output = gemini_model(text=text_input)\n    assert (\n        output.max() <= 1 and output.min() >= -1\n    ), \"Output values are out of expected range [-1, 1]\"\ndef test_model_with_high_dimension_input(gemini_model):",
+        "type": "code",
+        "location": "/tests/test_gemini.py:67-96"
+    },
+    "191": {
+        "file_id": 10,
+        "content": "This code contains several test functions for a gemini model. The first function tests the output when only image input is given, asserting that it is not None. The second function checks forward pass with both text and image inputs, ensuring non-None output. The third function verifies the output sequence length matches the maximum sequence length. The fourth function asserts that output values fall within expected range [-1, 1]. Lastly, a test case for high-dimensional input is defined.",
+        "type": "comment"
+    },
+    "192": {
+        "file_id": 10,
+        "content": "    text_input = torch.randn(1, 50432, 3000)  # Higher dimension than usual\n    output = gemini_model(text=text_input)\n    assert output is not None, \"Model failed to process high dimension input\"\ndef test_model_performance_with_typical_data(gemini_model):\n    text_input = torch.randn(1, 50432, 2560)\n    img_input = torch.randn(1, 3, 64, 64)\n    output = gemini_model(text=text_input, img=img_input)\n    assert output is not None, \"Model failed with typical data\"\n    # Add more assertions as needed\ndef test_robustness_to_random_dropout(gemini_model):\n    text_input = torch.randn(1, 50432, 2560) * torch.bernoulli(\n        0.5 * torch.ones(1, 50432, 2560)\n    )\n    output = gemini_model(text=text_input)\n    assert output is not None, \"Model is not robust to random dropout\"\ndef test_model_serialization(gemini_model):\n    torch.save(gemini_model.state_dict(), \"gemini_model.pth\")\n    deserialized_model = Gemini()\n    deserialized_model.load_state_dict(torch.load(\"gemini_model.pth\"))\n    assert isinstance(deserialized_model, Gemini), \"Deserialization failed\"",
+        "type": "code",
+        "location": "/tests/test_gemini.py:97-122"
+    },
+    "193": {
+        "file_id": 10,
+        "content": "The code includes test functions for the Gemini model. The first test checks if the model can handle higher-dimensional input than usual. The second test verifies the model's performance with typical data. The third test assesses the model's robustness to random dropout. Finally, the fourth test examines the serialization and deserialization of the Gemini model.",
+        "type": "comment"
+    },
+    "194": {
+        "file_id": 10,
+        "content": "def test_model_copy(gemini_model):\n    model_copy = copy.deepcopy(gemini_model)\n    assert isinstance(model_copy, Gemini), \"Model copy is not an instance of Gemini\"\ndef test_forward_pass_error_handling(gemini_model):\n    with pytest.raises(ValueError):  # Replace ValueError with the expected error type\n        invalid_input = torch.randn(1, 2, 3)  # Deliberately incorrect shape\n        _ = gemini_model(text=invalid_input)",
+        "type": "code",
+        "location": "/tests/test_gemini.py:125-133"
+    },
+    "195": {
+        "file_id": 10,
+        "content": "These lines of code define two test functions for the Gemini model. The first function, `test_model_copy()`, creates a deep copy of the Gemini model and asserts that the copied instance is indeed an instance of the Gemini class. The second function, `test_forward_pass_error_handling()`, checks if the forward pass raises a ValueError when given an input shape that does not match the expected dimensions for the Gemini model.",
+        "type": "comment"
+    },
+    "196": {
+        "file_id": 11,
+        "content": "/tests/test_img_encoder.py",
+        "type": "filepath"
+    },
+    "197": {
+        "file_id": 11,
+        "content": "The code snippets test the ImageToTextEmbeddings model in Gemini Torch library, verifying proper initialization and ensuring the output shape is (1, 128, 128) for different image sizes.",
+        "type": "summary"
+    },
+    "198": {
+        "file_id": 11,
+        "content": "import torch\nimport unittest\nfrom gemini_torch.utils import ImageToTextEmbeddings\nclass TestImageToTextEmbeddings(unittest.TestCase):\n    def setUp(self):\n        self.model = ImageToTextEmbeddings(\n            patches=16,\n            patch_size=16,\n            transformer_dim=512,\n            img_channels=3,\n            seq_len=128,\n            reduced_dim=128,\n        )\n    def test_initialization(self):\n        self.assertIsInstance(self.model, ImageToTextEmbeddings)\n    def test_forward_with_img_256(self):\n        img = torch.randn(1, 3, 256, 256)\n        output = self.model(img)\n        self.assertIsInstance(output, torch.Tensor)\n        self.assertEqual(output.shape, (1, 128, 128))\n    def test_forward_with_img_512(self):\n        img = torch.randn(1, 3, 512, 512)\n        output = self.model(img)\n        self.assertIsInstance(output, torch.Tensor)\n        self.assertEqual(output.shape, (1, 128, 128))\n    def test_forward_with_img_1024(self):\n        img = torch.randn(1, 3, 1024, 1024)\n        output = self.model(img)",
+        "type": "code",
+        "location": "/tests/test_img_encoder.py:1-34"
+    },
+    "199": {
+        "file_id": 11,
+        "content": "This code snippet contains unit tests for the ImageToTextEmbeddings model in the Gemini Torch library. The model takes an image as input and returns a tensor of text embeddings, with fixed output shape (1, 128, 128). The tests ensure proper initialization of the model and check the output shapes when feeding images of different sizes (256x256, 512x512, 1024x1024).",
+        "type": "comment"
+    }
+}
