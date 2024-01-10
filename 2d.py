@@ -40,11 +40,13 @@ class ImageToTextEmbeddings(nn.Module):
         # Reshape the embeddings into the shape (batch_size, seq_len, dim)
         seq_len = (height // self.patch_size) * (width // self.patch_size)
         text_tokens = rearrange(embeddings, 'b (h w) e -> b h w e', h=seq_len, w=1)
-        text_tokens = reduce(text_tokens, "b h w e -> b (w e h)", "mean")
-        seq_proj = nn.Linear(seq_len, self.seq_len)
-        text_tokens = seq_proj(text_tokens)
+        text_tokens = reduce(text_tokens, 'b h w e -> b h', 'mean')
         
-
+        b, h = text_tokens.shape
+        proj = nn.Linear(h, self.seq_len)
+        text_tokens = proj(text_tokens)
+        
+        
         
 
         return text_tokens
@@ -77,13 +79,12 @@ class AudioToEmbeddings(nn.Module):
         torch.Size([1, 512, 512])
     """
 
-    def __init__(self, audio_seq_len: int, seqlen: int, dim: int):
+    def __init__(self, audio_seq_len: int, seqlen: int,):
         super(AudioToEmbeddings, self).__init__()
         self.audio_seq_len = audio_seq_len
         self.seqlen = seqlen
-        self.dim = dim
         # Initialize a linear layer to project the 2D audio input to the desired 3D shape
-        self.projection = nn.Linear(audio_seq_len, dim)
+        self.projection = nn.Linear(audio_seq_len, seqlen)
 
     def forward(self, x):
         """Forward pass
@@ -98,18 +99,11 @@ class AudioToEmbeddings(nn.Module):
         batch, audio_seq_len = x.shape
 
         # Project the audio tensor to match the seqlen and dim
-        x = self.projection(x)  # x shape: [batch, seqlen * dim]
-
-        # Reshape to the target shape: [batch, seqlen, dim]
-        x = rearrange(x, "b (s d) -> b s d", s=self.seqlen, d=self.dim)
+        x = self.projection(x)  # x shape: [batch, seqlen]
 
         return x
-
-x = torch.randn(1, 32000)
-model = AudioToEmbeddings(
-    audio_seq_len=32000,
-    seqlen=512,
-    dim=512
-)
-y = model(x)
-print(y.shape)  # Should be [1, 512, 512]
+    
+# x = torch.randn(1, 32000)
+# model = AudioToEmbeddings(audio_seq_len=32000, seqlen=512)
+# y = model(x)
+# print(y.shape)

@@ -18,7 +18,7 @@ model = Gemini(
     patches=8,  # Reduced from 16
     patch_size=8,  # Reduced from 16
     img_channels=3,  # Reduced from 3
-    # audio_seq_len=32,  # Reduced from 64
+    audio_seq_len=32,  # Reduced from 64
 )
 
 # Text shape: [batch, seq_len, dim]
@@ -28,10 +28,11 @@ text = torch.randint(0, 10000, (1, 1024))  # Reduced seq_len from 4096
 img = torch.randn(1, 3, 64, 64)  # Reduced height and width from 128
 
 # Audio shape: [batch, audio_seq_len, dim]
-# audio = torch.randn(1, 32)  # Reduced audio_seq_len from 64
+audio = torch.randn(1, 32)  # Reduced audio_seq_len from 64
 
 # Apply model to text and img
-y = model(text, img)
+y = model(text=text, img=img, audio=audio)
 
 # Output shape: [batch, seq_len, dim]
 print(y)
+print(y.shape)

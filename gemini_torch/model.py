@@ -56,7 +56,7 @@ class Gemini(Module):
         img_channels: int = 3,
         audio_seq_len: int = 128,
         *args,
-        **kwargs
+        **kwargs,
     ):
         super().__init__()
 
@@ -77,21 +77,24 @@ class Gemini(Module):
                     attn_qk_norm=attn_qk_norm,
                     attn_qk_norm_dim_scale=attn_qk_norm_dim_scale,
                     *args,
-                    **kwargs
+                    **kwargs,
                 ),
             )
 
             # Autoregressive wrapper for the model
-            # self.decoder = AutoregressiveWrapper(self.gemini)
+            self.decoder = AutoregressiveWrapper(self.gemini)
 
             # Takes in imgs -> patches them -> transforms them to the same dimension as the model
             self.img_to_text_embedding = ImageToTextEmbeddings(
-                patch_size=patches, dim=dim, seq_len=num_tokens, *args, **kwargs
+                patch_size=patches, dim=dim, seq_len=max_seq_len, *args, **kwargs
             )
 
             # Takes in audio -> transforms it to the same dimension as the model
             self.audio_to_lang_embedding = AudioToEmbeddings(
-                audio_seq_len=audio_seq_len, seqlen=max_seq_len, dim=dim, *args, **kwargs
+                audio_seq_len=audio_seq_len,
+                seqlen=max_seq_len,
+                *args,
+                **kwargs,
             )
 
         except Exception as e:
@@ -104,7 +107,7 @@ class Gemini(Module):
         img: torch.Tensor = None,
         audio: torch.Tensor = None,
         *args,
-        **kwargs
+        **kwargs,
     ):
         """
         Forward pass of the model.
@@ -128,24 +131,30 @@ class Gemini(Module):
         try:
             if exists(img) and exists(audio):
                 # Process audio and image inputs
-                audio_emb = self.audio_to_lang_embedding(audio)
-                img_emb = self.img_to_transformer(img)
+                audio = self.audio_to_lang_embedding(audio)
+                img = self.img_to_text_embedding(img)
 
                 # Concatenate text, image, and audio embeddings
-                x = torch.cat((text, img_emb, audio_emb))
-                
-            if exists(img):
+                # x = torch.cat((text, img_emb, audio_emb))
+                fused = torch.cat((text, img, audio))
+                return self.decoder(text, prepend_embeds=fused, *args, **kwargs)
+            elif exists(img):
                 # Process image input
-                x = self.img_to_text_embedding(img)
-                print(f"Image shape: {x.shape}")
-                x = torch.cat((text, x))
-                print(f"Concat shape: {x.shape}")
-                return x
+                img = self.img_to_text_embedding(img)
+                # print(f"Image shape: {x.shape}")
+                # x = torch.cat((text, x))
+                # print(f"Concat shape: {x.shape}")
+                # return x
+                return self.decoder(text, prepend_embeds=img, *args, **kwargs)
+            elif exists(audio):
+                # Process audio input
+                audio = self.audio_to_lang_embedding(audio)
+                # x = torch.cat((text, x), dim=1)
+                # return audio
+                # Call the forward method of the decoder once
+                return self.decoder(text, prepend_embeds=audio, *args, **kwargs)
             else:
-                x = text
-
-            # Call the forward method of the decoder once
-            return self.decoder(x, padded_x=x)
+                return self.decoder(text, *args, **kwargs)
         except Exception as e:
             print("Failed in forward method: ", e)
             raise
