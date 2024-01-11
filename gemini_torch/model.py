@@ -141,8 +141,6 @@ class Gemini(Module):
         img = two_proj(img)
         img = rearrange(img, "b d c -> b c d")
 
-        
-        
         ########## Audio ##########
         # Audio transformations to add a 3rd dimension
         audio_3d = rearrange(audio, "b l -> b l 1")

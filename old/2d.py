@@ -1,4 +1,3 @@
-import torch
 from einops import rearrange, reduce
 from torch import nn
 
