@@ -104,11 +104,11 @@ class Gemini(Module):
 
         # Autoregressive wrapper for the model
         self.decoder = AutoregressiveWrapper(self.gemini)
-        
+
         # Post fusion norm
         if self.post_fusion_norm:
             self.psf_norm = nn.LayerNorm(dim)
-            
+
         if self.post_modal_transform_norm:
             self.pmt_norm = nn.LayerNorm(dim)
 
@@ -151,7 +151,7 @@ class Gemini(Module):
         two_proj = nn.Linear(img_c, self.max_seq_len)
         img = two_proj(img)
         img = rearrange(img, "b d c -> b c d")
-        
+
         if self.post_modal_transform_norm:
             img = self.pmt_norm(img)
 
@@ -174,13 +174,13 @@ class Gemini(Module):
         audio = audio_proj2(audio)
         audio = rearrange(audio, "b d l -> b l d")
         # print(f"Audio final shape: {audio.shape}")
-        
+
         if self.post_modal_transform_norm:
             audio = self.pmt_norm(audio)
 
         # Fuse layers
         fused = torch.cat((img, audio), dim=1)
-        
+
         # Post fusion layernorm for stability.
         if self.post_fusion_norm:
             fused = self.psf_norm(fused)
