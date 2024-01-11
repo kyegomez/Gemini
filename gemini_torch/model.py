@@ -1,9 +1,10 @@
 import torch
+from torch import nn
 from torch.nn import Module
 from zeta.structs import AutoregressiveWrapper
 
 from gemini_torch.transformer import Decoder, Transformer
-from gemini_torch.utils import ImageToTextEmbeddings, AudioToEmbeddings
+from einops import rearrange, reduce
 
 
 def exists(val):
@@ -59,47 +60,46 @@ class Gemini(Module):
         **kwargs,
     ):
         super().__init__()
+        self.num_tokens = num_tokens
+        self.max_seq_len = max_seq_len
+        self.dim = dim
+        self.depth = depth
+        self.dim_head = dim_head
+        self.heads = heads
+        self.use_abs_pos_emb = use_abs_pos_emb
+        self.attn_flash = attn_flash
+        self.attn_kv_heads = attn_kv_heads
+        self.qk_norm = qk_norm
+        self.attn_qk_norm = attn_qk_norm
+        self.attn_qk_norm_dim_scale = attn_qk_norm_dim_scale
+        self.patches = patches
+        self.patch_size = patch_size
+        self.img_channels = img_channels
+        self.audio_seq_len = audio_seq_len
 
-        try:
-            # Transformer model for the model
-            self.gemini = Transformer(
-                num_tokens=num_tokens,
-                max_seq_len=max_seq_len,
-                use_abs_pos_emb=use_abs_pos_emb,
-                attn_layers=Decoder(
-                    dim=dim,
-                    depth=depth,
-                    dim_head=dim_head,
-                    heads=heads,
-                    attn_flash=attn_flash,
-                    attn_kv_heads=attn_kv_heads,
-                    qk_norm=qk_norm,
-                    attn_qk_norm=attn_qk_norm,
-                    attn_qk_norm_dim_scale=attn_qk_norm_dim_scale,
-                    *args,
-                    **kwargs,
-                ),
-            )
-
-            # Autoregressive wrapper for the model
-            self.decoder = AutoregressiveWrapper(self.gemini)
-
-            # Takes in imgs -> patches them -> transforms them to the same dimension as the model
-            self.img_to_text_embedding = ImageToTextEmbeddings(
-                patch_size=patches, dim=dim, seq_len=max_seq_len, *args, **kwargs
-            )
-
-            # Takes in audio -> transforms it to the same dimension as the model
-            self.audio_to_lang_embedding = AudioToEmbeddings(
-                audio_seq_len=audio_seq_len,
-                seqlen=max_seq_len,
+        # Transformer model for the model
+        self.gemini = Transformer(
+            num_tokens=num_tokens,
+            max_seq_len=max_seq_len,
+            use_abs_pos_emb=use_abs_pos_emb,
+            attn_layers=Decoder(
+                dim=dim,
+                depth=depth,
+                dim_head=dim_head,
+                heads=heads,
+                attn_flash=attn_flash,
+                attn_kv_heads=attn_kv_heads,
+                qk_norm=qk_norm,
+                attn_qk_norm=attn_qk_norm,
+                attn_qk_norm_dim_scale=attn_qk_norm_dim_scale,
+                cross_attend=True,
                 *args,
                 **kwargs,
-            )
+            ),
+        )
 
-        except Exception as e:
-            print("Failed to initialize gemini: ", e)
-            raise e
+        # Autoregressive wrapper for the model
+        self.decoder = AutoregressiveWrapper(self.gemini)
 
     def forward(
         self,
@@ -127,34 +127,46 @@ class Gemini(Module):
 
 
         """
-        print(f"Text shape: {text.shape}")
-        try:
-            if exists(img) and exists(audio):
-                # Process audio and image inputs
-                audio = self.audio_to_lang_embedding(audio)
-                img = self.img_to_text_embedding(img)
+        print(f"Text: {text.shape} and text dtype: {text.dtype}")
 
-                # Concatenate text, image, and audio embeddings
-                # x = torch.cat((text, img_emb, audio_emb))
-                fused = torch.cat((text, img, audio))
-                return self.decoder(text, prepend_embeds=fused, *args, **kwargs)
-            elif exists(img):
-                # Process image input
-                img = self.img_to_text_embedding(img)
-                # print(f"Image shape: {x.shape}")
-                # x = torch.cat((text, x))
-                # print(f"Concat shape: {x.shape}")
-                # return x
-                return self.decoder(text, prepend_embeds=img, *args, **kwargs)
-            elif exists(audio):
-                # Process audio input
-                audio = self.audio_to_lang_embedding(audio)
-                # x = torch.cat((text, x), dim=1)
-                # return audio
-                # Call the forward method of the decoder once
-                return self.decoder(text, prepend_embeds=audio, *args, **kwargs)
-            else:
-                return self.decoder(text, *args, **kwargs)
-        except Exception as e:
-            print("Failed in forward method: ", e)
-            raise
+        # Audio dimensions
+        img_b, img_c, img_h, img_w = img.shape
+
+        img_to_text = reduce(img, "b c h w -> b c (h w)", "mean")
+        img_proj = nn.Linear(img_h * img_w, self.dim)
+        img = img_proj(img_to_text)
+        # Reshape to apply the linear on the last dimension c to make it compatible
+        img = rearrange(img, "b c d -> b d c")
+        two_proj = nn.Linear(img_c, self.max_seq_len)
+        img = two_proj(img)
+        img = rearrange(img, "b d c -> b c d")
+
+        
+        
+        ########## Audio ##########
+        # Audio transformations to add a 3rd dimension
+        audio_3d = rearrange(audio, "b l -> b l 1")
+        print(f"Audio 3d: {audio_3d.shape}")
+
+        # Audio dimensions
+        audio_b, audio_seq_len, audio_dim = audio_3d.shape
+
+        # Audio proj last dimension
+        audio_proj = nn.Linear(audio_dim, self.dim)
+        audio = audio_proj(audio_3d)
+        print(f"Audio proj shape: {audio.shape}")
+
+        # Audio reshape seqlen
+        audio = rearrange(audio, "b l d -> b d l")
+        audio_proj2 = nn.Linear(audio_seq_len, self.max_seq_len)
+        audio = audio_proj2(audio)
+        audio = rearrange(audio, "b d l -> b l d")
+        print(f"Audio final shape: {audio.shape}")
+
+        # Fuse layers
+        fused = torch.cat((img, audio), dim=1)
+
+        # audio
+        # print(img_to_text.shape)
+        # fused = torch.concat((img, audio))
+        return self.decoder(text, context=fused, *args, **kwargs)
