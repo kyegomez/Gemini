@@ -127,7 +127,7 @@ class Gemini(Module):
 
 
         """
-        print(f"Text: {text.shape} and text dtype: {text.dtype}")
+        # print(f"Text: {text.shape} and text dtype: {text.dtype}")
 
         # Audio dimensions
         img_b, img_c, img_h, img_w = img.shape
@@ -144,7 +144,7 @@ class Gemini(Module):
         ########## Audio ##########
         # Audio transformations to add a 3rd dimension
         audio_3d = rearrange(audio, "b l -> b l 1")
-        print(f"Audio 3d: {audio_3d.shape}")
+        # print(f"Audio 3d: {audio_3d.shape}")
 
         # Audio dimensions
         audio_b, audio_seq_len, audio_dim = audio_3d.shape
@@ -152,14 +152,14 @@ class Gemini(Module):
         # Audio proj last dimension
         audio_proj = nn.Linear(audio_dim, self.dim)
         audio = audio_proj(audio_3d)
-        print(f"Audio proj shape: {audio.shape}")
+        # print(f"Audio proj shape: {audio.shape}")
 
         # Audio reshape seqlen
         audio = rearrange(audio, "b l d -> b d l")
         audio_proj2 = nn.Linear(audio_seq_len, self.max_seq_len)
         audio = audio_proj2(audio)
         audio = rearrange(audio, "b d l -> b l d")
-        print(f"Audio final shape: {audio.shape}")
+        # print(f"Audio final shape: {audio.shape}")
 
         # Fuse layers
         fused = torch.cat((img, audio), dim=1)
