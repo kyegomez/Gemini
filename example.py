@@ -15,6 +15,8 @@ model = Gemini(
     qk_norm=True,
     attn_qk_norm=True,
     attn_qk_norm_dim_scale=True,
+    post_fusion_norm=True,
+    post_modal_transform_norm=True,
 )
 
 # Text shape: [batch, seq_len, dim]

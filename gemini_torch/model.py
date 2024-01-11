@@ -56,6 +56,8 @@ class Gemini(Module):
         patch_size: int = 16,
         img_channels: int = 3,
         audio_seq_len: int = 128,
+        post_fusion_norm: bool = True,
+        post_modal_transform_norm: bool = False,
         *args,
         **kwargs,
     ):
@@ -76,6 +78,8 @@ class Gemini(Module):
         self.patch_size = patch_size
         self.img_channels = img_channels
         self.audio_seq_len = audio_seq_len
+        self.post_fusion_norm = post_fusion_norm
+        self.post_modal_transform_norm = post_modal_transform_norm
 
         # Transformer model for the model
         self.gemini = Transformer(
@@ -100,6 +104,13 @@ class Gemini(Module):
 
         # Autoregressive wrapper for the model
         self.decoder = AutoregressiveWrapper(self.gemini)
+        
+        # Post fusion norm
+        if self.post_fusion_norm:
+            self.psf_norm = nn.LayerNorm(dim)
+            
+        if self.post_modal_transform_norm:
+            self.pmt_norm = nn.LayerNorm(dim)
 
     def forward(
         self,
@@ -140,6 +151,9 @@ class Gemini(Module):
         two_proj = nn.Linear(img_c, self.max_seq_len)
         img = two_proj(img)
         img = rearrange(img, "b d c -> b c d")
+        
+        if self.post_modal_transform_norm:
+            img = self.pmt_norm(img)
 
         ########## Audio ##########
         # Audio transformations to add a 3rd dimension
@@ -160,9 +174,16 @@ class Gemini(Module):
         audio = audio_proj2(audio)
         audio = rearrange(audio, "b d l -> b l d")
         # print(f"Audio final shape: {audio.shape}")
+        
+        if self.post_modal_transform_norm:
+            audio = self.pmt_norm(audio)
 
         # Fuse layers
         fused = torch.cat((img, audio), dim=1)
+        
+        # Post fusion layernorm for stability.
+        if self.post_fusion_norm:
+            fused = self.psf_norm(fused)
 
         # audio
         # print(img_to_text.shape)
