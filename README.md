@@ -49,14 +49,8 @@ model = Gemini(
 # Text shape: [batch, seq_len, dim]
 text = torch.randint(0, 50432, (1, 4096))  # Reduced seq_len from 8192
 
-# Img shape: [batch, channels, height, width]
-img = torch.randn(1, 3, 128, 128)  # Reduced height and width from 256
-
-# Audio shape: [batch, audio_seq_len, dim]
-audio = torch.randn(1, 64)  # Reduced audio_seq_len from 128
-
-# Apply model to text and img
-y = model(text, img, audio)
+# Apply model to text
+y = model(text,)
 
 # Output shape: [batch, seq_len, dim]
 print(y)
@@ -65,25 +59,24 @@ print(y)
 ```
 --------
 
-### Multi-Modal with Imgs + Audio
-- Img processing through a specially crafted module that takes in img -> patches it -> then reshapes to the shape of the text tensors, [B, seqlen, dim] -> align with text tokens
+### Full Multi-Modal Gemini 
+- Processes images and audio through a series of reshapes
+- Ready to train for production grade usage
+- Hyper optimized with flash attention, qk norm, and other methods
 
 ```python
 import torch
 from gemini_torch.model import Gemini
 
-# Initialize model
+# Initialize model with smaller dimensions
 model = Gemini(
-    num_tokens=50432,
-    max_seq_len=8192,
-    dim=2560,
-    depth=32,
-    dim_head=128,
-    heads=24,
+    num_tokens=10000,  # Reduced from 50432
+    max_seq_len=1024,  # Reduced from 4096
+    dim=320,  # Reduced from 1280
+    depth=8,  # Reduced from 16
+    dim_head=32,  # Reduced from 64
+    heads=6,  # Reduced from 12
     use_abs_pos_emb=False,
-    alibi_pos_bias=True,
-    alibi_num_heads=12,
-    rotary_xpos=True,
     attn_flash=True,
     attn_kv_heads=2,
     qk_norm=True,
@@ -92,20 +85,28 @@ model = Gemini(
 )
 
 # Text shape: [batch, seq_len, dim]
-text = torch.randint(0, 50432, (1, 8192))
+text = torch.randint(0, 10000, (1, 1024))  # Reduced seq_len from 4096
 
 # Img shape: [batch, channels, height, width]
-img = torch.randn(1, 3, 256, 256)
+img = torch.randn(1, 3, 64, 64)  # Reduced height and width from 128
 
 # Audio shape: [batch, audio_seq_len, dim]
-audio = torch.randn(1, 128)
+audio = torch.randn(1, 32)  # Reduced audio_seq_len from 64
 
 # Apply model to text and img
-y = model(text, img, audio)
+y, _ = model(text=text, img=img, audio=audio)
 
 # Output shape: [batch, seq_len, dim]
+print(y)
 print(y.shape)
 
+
+# After much training
+model.eval()
+
+text = tokenize(texts)
+logits = model(text)
+text = detokenize(logits)
 
 ```
 ------
@@ -134,53 +135,6 @@ print("Decoded audio:", decoded_audio)
 
 ```
 
-### `ImageToTextEmbeddings`
-- takes in img -> patches -> reshapes to [B, SEQLEN, Dim] to align with transformer
-```python
-import torch
-from gemini_torch.utils import ImageToTextEmbeddings
-
-# Example usage
-num_patches = 16
-patch_size = 16
-transformer_dim = 512
-img_channels = 3
-seq_len = 50000
-reduced_dim = 256  # Reduced dimension after dimensionality reduction
-
-model = ImageToTextEmbeddings(
-    num_patches, patch_size, transformer_dim, img_channels, seq_len, reduced_dim
-)
-
-# Dummy image input [BATCH, CHANNELS, HEIGHT, WIDTH]
-dummy_img = torch.randn(1, 3, 64, 64)  # Batch size of 1, 64x64 RGB image
-
-# Forward pass
-seq_space_output = model(dummy_img)
-print(seq_space_output.shape)  # Expected shape: [1, 50000, 256]
-
-
-```
-
-### `AudioToEmbeddings`
-- Transforms audio into the same shape as text tensors.
-
-```python
-import torch 
-from gemini_torch.utils import AudioToEmbeddings
-
-# Example usage
-audio_seq_len = 32000  # Input audio sequence length
-seqlen = 512  # Sequence length to align with the language transformer
-dim = 512  # Embedding dimension
-
-model = AudioToEmbeddings(audio_seq_len, seqlen, dim)
-audio_input = torch.randn(1, audio_seq_len)  # Example input tensor
-output = model(audio_input)
-
-print("Output shape:", output.shape)  # Should be [1, 512, 512]
-
-```
 
 
 # References
