@@ -131,414 +131,416 @@
     },
     "24": {
         "file_id": 2,
-        "content": "/pyproject.toml",
+        "content": "/gemini_torch/__init__.py",
         "type": "filepath"
     },
     "25": {
         "file_id": 2,
-        "content": "The code is a PyProject configuration file using Poetry for dependency management, specifying package versions and configurations like ruff, types-toml, autopep8 options, and more for the Gemini-Torch project in Python 3.9.",
+        "content": "This code imports necessary classes and functions from different modules in the gemini_torch library, and adds them to the __all__ list for future use.",
         "type": "summary"
     },
     "26": {
         "file_id": 2,
-        "content": "[build-system]\nrequires = [\"poetry-core>=1.0.0\"]\nbuild-backend = \"poetry.core.masonry.api\"\n[tool.poetry]\nname = \"gemini-torch\"\nversion = \"0.1.2\"\ndescription = \"Gemini - Pytorch\"\nlicense = \"MIT\"\nauthors = [\"Kye Gomez <kye@apac.ai>\"]\nhomepage = \"https://github.com/kyegomez/Gemini\"\ndocumentation = \"https://github.com/kyegomez/Gemini\"  # Add this if you have documentation.\nreadme = \"README.md\"  # Assuming you have a README.md\nrepository = \"https://github.com/kyegomez/Gemini\"\nkeywords = [\"artificial intelligence\", \"deep learning\", \"optimizers\", \"Prompt Engineering\"]\nclassifiers = [\n    \"Development Status :: 4 - Beta\",\n    \"Intended Audience :: Developers\",\n    \"Topic :: Scientific/Engineering :: Artificial Intelligence\",\n    \"License :: OSI Approved :: MIT License\",\n    \"Programming Language :: Python :: 3.9\"\n]\n[tool.poetry.dependencies]\npython = \"^3.9\"\nzetascale = \"1.5.8\"\ntorch = \"*\"\neinops = \"*\"\ntorchvision = \"*\"\nsentencepiece = \"*\"\npytest = \"*\"\n[tool.poetry.dev-dependencies]\n# Add development dependencies here\n[tool.poetry.group.lint.dependencies]",
-        "type": "code",
-        "location": "/pyproject.toml:1-39"
-    },
-    "27": {
-        "file_id": 2,
-        "content": "This code is a configuration file for the PyProject. It uses Poetry, a dependency management tool, to build and manage dependencies for the Gemini-Torch project. The project is written in Python 3.9. It depends on zetascale (1.5.8), Torch, Einops, Torchvision, Sentencepiece, and Pytest. Development dependencies may be added under [tool.poetry.dev-dependencies].",
-        "type": "comment"
-    },
-    "28": {
-        "file_id": 2,
-        "content": "ruff = \"^0.1.6\"\ntypes-toml = \"^0.10.8.1\"\ntypes-redis = \"^4.3.21.6\"\ntypes-pytz = \"^2023.3.0.0\"\nblack = \"^23.1.0\"\ntypes-chardet = \"^5.0.4.6\"\nmypy-protobuf = \"^3.0.0\"\n[tool.autopep8]\nmax_line_length = 120\nignore = \"E501,W6\"  # or [\"E501\", \"W6\"]\nin-place = true\nrecursive = true\naggressive = 3",
-        "type": "code",
-        "location": "/pyproject.toml:40-54"
-    },
-    "29": {
-        "file_id": 2,
-        "content": "This code specifies package versions and configurations for a Python project, including ruff, types-toml, types-redis, types-pytz, black, types-chardet, mypy-protobuf. It also sets autopep8 tool options for maximum line length, ignore list, in-place editing, recursive mode, and aggressive level.",
-        "type": "comment"
-    },
-    "30": {
-        "file_id": 3,
-        "content": "/requirements.txt",
-        "type": "filepath"
-    },
-    "31": {
-        "file_id": 3,
-        "content": "This code snippet lists the required Python packages for a project. These packages are zetascale, torch, einops, pytest, and sentencepiece, which suggest that this project involves large-scale data processing, machine learning, tensor operations, testing, and text tokenization respectively.",
-        "type": "summary"
-    },
-    "32": {
-        "file_id": 3,
-        "content": "zetascale\ntorch\neinops\npytest\nsentencepiece",
-        "type": "code",
-        "location": "/requirements.txt:1-5"
-    },
-    "33": {
-        "file_id": 3,
-        "content": "This code snippet lists the required Python packages for a project. These packages are zetascale, torch, einops, pytest, and sentencepiece, which suggest that this project involves large-scale data processing, machine learning, tensor operations, testing, and text tokenization respectively.",
-        "type": "comment"
-    },
-    "34": {
-        "file_id": 4,
-        "content": "/gemini_torch/__init__.py",
-        "type": "filepath"
-    },
-    "35": {
-        "file_id": 4,
-        "content": "This code imports necessary classes and functions from different modules in the gemini_torch library, and adds them to the __all__ list for future use.",
-        "type": "summary"
-    },
-    "36": {
-        "file_id": 4,
         "content": "from gemini_torch.model import Gemini\nfrom gemini_torch.utils import ImageToTextEmbeddings, AudioToEmbeddings\nfrom gemini_torch.tokenizer import MultimodalSentencePieceTokenizer\n__all__ = [\n    \"Gemini\",\n    \"ImageToTextEmbeddings\",\n    \"AudioToEmbeddings\",\n    \"MultimodalSentencePieceTokenizer\",\n]",
         "type": "code",
         "location": "/gemini_torch/__init__.py:1-10"
     },
-    "37": {
-        "file_id": 4,
+    "27": {
+        "file_id": 2,
         "content": "This code imports necessary classes and functions from different modules in the gemini_torch library, and adds them to the __all__ list for future use.",
         "type": "comment"
     },
-    "38": {
-        "file_id": 5,
+    "28": {
+        "file_id": 3,
         "content": "/gemini_torch/model.py",
         "type": "filepath"
     },
-    "39": {
-        "file_id": 5,
+    "29": {
+        "file_id": 3,
         "content": "The code defines Transformer and Gemini models with multiple layers, handles different input types, and concatenates text with existing x for forward pass in the decoder, handling exceptions as needed.",
         "type": "summary"
     },
-    "40": {
-        "file_id": 5,
+    "30": {
+        "file_id": 3,
         "content": "import torch\nfrom torch.nn import Module\nfrom zeta.structs import AutoregressiveWrapper\nfrom gemini_torch.transformer import Decoder, Transformer\nfrom gemini_torch.utils import ImageToTextEmbeddings, AudioToEmbeddings\ndef exists(val):\n    return val is not None\nclass Gemini(Module):\n    \"\"\"\n    Gemini model class.\n    Args:\n    - num_tokens: Number of tokens in the vocabulary\n    - max_seq_len: Maximum sequence length\n    - dim: Dimension of the model\n    - depth: Depth of the model\n    - dim_head: Dimension of the model head\n    - heads: Number of heads\n    - use_abs_pos_emb: Whether to use absolute position embedding\n    - alibi_pos_bias: Alibi position bias\n    - alibi_num_heads: Number of alibi heads\n    - rotary_xpos: Rotary position\n    - attn_flash: Attention flash\n    - deepnorm: Deep normalization\n    - shift_tokens: Number of tokens to shift\n    - attn_one_kv_head: Attention one key/value head\n    - qk_norm: Query-key normalization\n    - attn_qk_norm: Attention query-key normalization\n    - attn_qk_norm_dim_scale: Attention query-key normalization dimension scale",
         "type": "code",
         "location": "/gemini_torch/model.py:1-35"
     },
-    "41": {
-        "file_id": 5,
+    "31": {
+        "file_id": 3,
         "content": "The code defines a class for the Gemini model, which is an instance of the PyTorch Module. The model accepts arguments such as number of tokens, maximum sequence length, dimension, depth, etc., and utilizes various transformer-based components including Decoder and Transformer classes from gemini_torch package. It also includes several optional features like absolute position embedding and alibi position bias.",
         "type": "comment"
     },
-    "42": {
-        "file_id": 5,
+    "32": {
+        "file_id": 3,
         "content": "    - embedding_provider: Embedding provider module\n    \"\"\"\n    def __init__(\n        self,\n        num_tokens=50432,\n        max_seq_len=32052,\n        dim=2560,\n        depth=32,\n        dim_head=128,\n        heads=24,\n        use_abs_pos_emb=False,\n        attn_flash=True,\n        attn_kv_heads=2,\n        qk_norm=True,\n        attn_qk_norm=True,\n        attn_qk_norm_dim_scale=True,\n        patches: int = 16,\n        patch_size: int = 16,\n        img_channels: int = 3,\n        audio_seq_len: int = 128,\n        *args,\n        **kwargs\n    ):\n        super().__init__()\n        try:\n            # Transformer model for the model\n            self.gemini = Transformer(\n                num_tokens=num_tokens,\n                max_seq_len=max_seq_len,\n                use_abs_pos_emb=use_abs_pos_emb,\n                attn_layers=Decoder(\n                    dim=dim,\n                    depth=depth,\n                    dim_head=dim_head,\n                    heads=heads,\n                    attn_flash=attn_flash,\n                    attn_kv_heads=attn_kv_heads,",
         "type": "code",
         "location": "/gemini_torch/model.py:36-75"
     },
-    "43": {
-        "file_id": 5,
+    "33": {
+        "file_id": 3,
         "content": "This code initializes a Transformer model with specific parameters for the number of tokens, maximum sequence length, embedding provider, and various other attributes. It also includes options for absolute position embeddings, attention layers, and flash attention. The model is designed to handle text, image, or audio inputs, with options for patch size and audio sequence length.",
         "type": "comment"
     },
-    "44": {
-        "file_id": 5,
+    "34": {
+        "file_id": 3,
         "content": "                    qk_norm=qk_norm,\n                    attn_qk_norm=attn_qk_norm,\n                    attn_qk_norm_dim_scale=attn_qk_norm_dim_scale,\n                    *args,\n                    **kwargs\n                ),\n            )\n            # Autoregressive wrapper for the model\n            # self.decoder = AutoregressiveWrapper(self.gemini)\n            # Takes in imgs -> patches them -> transforms them to the same dimension as the model\n            self.img_to_text_embedding = ImageToTextEmbeddings(\n                patch_size=patches, dim=dim, seq_len=num_tokens, *args, **kwargs\n            )\n            # Takes in audio -> transforms it to the same dimension as the model\n            self.audio_to_lang_embedding = AudioToEmbeddings(\n                audio_seq_len=audio_seq_len, seqlen=max_seq_len, dim=dim, *args, **kwargs\n            )\n        except Exception as e:\n            print(\"Failed to initialize gemini: \", e)\n            raise e\n    def forward(\n        self,\n        text: torch.Tensor = None,",
         "type": "code",
         "location": "/gemini_torch/model.py:76-103"
     },
-    "45": {
-        "file_id": 5,
+    "35": {
+        "file_id": 3,
         "content": "This code initializes a Gemini model with specified parameters and exceptions. The model consists of an autoregressive wrapper, image-to-text embedding layer, and audio-to-language embedding layer. The forward function is used for prediction.",
         "type": "comment"
     },
-    "46": {
-        "file_id": 5,
+    "36": {
+        "file_id": 3,
         "content": "        img: torch.Tensor = None,\n        audio: torch.Tensor = None,\n        *args,\n        **kwargs\n    ):\n        \"\"\"\n        Forward pass of the model.\n        Args:\n        - text: Text tensor\n        - img: Image tensor\n        Returns:\n        - torch.Tensor: The output of the model\n        Text input shape: [batch, seq_len, dim]\n        img input shape: [batch, channels, height, width]\n        audio input shape: [batch, audio_seq_len]\n        Output shape: [batch, seq_len, dim]\n        \"\"\"\n        print(f\"Text shape: {text.shape}\")\n        try:\n            if exists(img) and exists(audio):\n                # Process audio and image inputs\n                audio_emb = self.audio_to_lang_embedding(audio)\n                img_emb = self.img_to_transformer(img)\n                # Concatenate text, image, and audio embeddings\n                x = torch.cat((text, img_emb, audio_emb))\n            if exists(img):\n                # Process image input\n                x = self.img_to_text_embedding(img)\n                print(f\"Image shape: {x.shape}\")",
         "type": "code",
         "location": "/gemini_torch/model.py:104-140"
     },
-    "47": {
-        "file_id": 5,
+    "37": {
+        "file_id": 3,
         "content": "This code defines a forward pass function for a model that takes in text, image, and audio inputs. It prints the shape of the text input, then processes the image and audio inputs if they exist. The code concatenates the embeddings of the text, image, and audio to produce the output.",
         "type": "comment"
     },
-    "48": {
-        "file_id": 5,
+    "38": {
+        "file_id": 3,
         "content": "                x = torch.cat((text, x))\n                print(f\"Concat shape: {x.shape}\")\n                return x\n            else:\n                x = text\n            # Call the forward method of the decoder once\n            return self.decoder(x, padded_x=x)\n        except Exception as e:\n            print(\"Failed in forward method: \", e)\n            raise",
         "type": "code",
         "location": "/gemini_torch/model.py:141-151"
     },
-    "49": {
-        "file_id": 5,
+    "39": {
+        "file_id": 3,
         "content": "The code concatenates the text and the existing x, prints its shape, then returns it. If no exception occurs, it calls the decoder's forward method with the padded x as input. An exception will cause a failure message to print before re-raising the error.",
         "type": "comment"
     },
-    "50": {
-        "file_id": 6,
+    "40": {
+        "file_id": 4,
         "content": "/gemini_torch/tokenizer.py",
         "type": "filepath"
     },
-    "51": {
-        "file_id": 6,
+    "41": {
+        "file_id": 4,
         "content": "The code creates a Multimodal SentencePiece tokenizer for encoding and decoding strings into token IDs, with support for modality tokens, BOS, and EOS. It initializes by downloading the model and saves the vocabulary size.",
         "type": "summary"
     },
-    "52": {
-        "file_id": 6,
+    "42": {
+        "file_id": 4,
         "content": "import os\nimport requests\nfrom logging import getLogger\nfrom typing import List, Optional\nfrom sentencepiece import SentencePieceProcessor\nlogger = getLogger()\nPRETRAINED_VOCAB_FILES_MAP = {\n    \"vocab_file\": {\n        \"hf-internal-testing/llama-tokenizer\": \"https://huggingface.co/hf-internal-testing/llama-tokenizer/resolve/main/tokenizer.model\",\n    },\n    \"tokenizer_file\": {\n        \"hf-internal-testing/llama-tokenizer\": \"https://huggingface.co/hf-internal-testing/llama-tokenizer/resolve/main/tokenizer_config.json\",\n    },\n}\nclass MultimodalSentencePieceTokenizer:\n    \"\"\"Multimodal SentencePiece tokenizer.\n    Args:\n        model_path (str, optional): Path to the SentencePiece model file. Defaults to None.\n        tokenizer_name (str, optional): Name of the tokenizer to download. Defaults to None.\n    Methods:\n        encode(s: str, modality: str, bos: bool = True, eos: bool = True) -> List[int]: Encodes a string into a list of token IDs.\n        decode(tokens: List[int]) -> str: Decodes a list of token IDs into a string.",
         "type": "code",
         "location": "/gemini_torch/tokenizer.py:1-30"
     },
-    "53": {
-        "file_id": 6,
+    "43": {
+        "file_id": 4,
         "content": "This code defines a class for Multimodal SentencePiece tokenizer which can be used to encode and decode strings into lists of token IDs. It takes the path to the model file or tokenizer name as arguments. The PRETRAINED_VOCAB_FILES_MAP provides URLs for pre-trained models. It uses SentencePieceProcessor from the sentencepiece library.",
         "type": "comment"
     },
-    "54": {
-        "file_id": 6,
+    "44": {
+        "file_id": 4,
         "content": "    Examples:\n        >>> tokenizer_name = \"hf-internal-testing/llama-tokenizer\"\n        >>> tokenizer = MultimodalSentencePieceTokenizer(tokenizer_name=tokenizer_name)\n        >>> encoded_audio = tokenizer.encode(\"Audio description\", modality='audio')\n        >>> decoded_audio = tokenizer.decode(encoded_audio)\n        >>> print(\"Encoded audio:\", encoded_audio)\n        >>> print(\"Decoded audio:\", decoded_audio)\n    \"\"\"\n    def __init__(\n        self, model_path: Optional[str] = None, tokenizer_name: Optional[str] = None\n    ):\n        if model_path:\n            assert os.path.isfile(model_path), model_path\n        elif tokenizer_name:\n            model_path = self.download_tokenizer(tokenizer_name)\n        else:\n            raise ValueError(\"Either model_path or tokenizer_name must be provided.\")\n        self.sp_model = SentencePieceProcessor(model_file=model_path)\n        logger.info(f\"Reloaded SentencePiece model from {model_path}\")\n        # Initialize token IDs\n        self.n_words: int = self.sp_model.vocab_size()",
         "type": "code",
         "location": "/gemini_torch/tokenizer.py:32-55"
     },
-    "55": {
-        "file_id": 6,
+    "45": {
+        "file_id": 4,
         "content": "The code initializes a multimodal sentence piece tokenizer with the option to provide a model path or tokenizer name. It checks if the model_path exists and downloads the tokenizer if only tokenizer_name is provided. The SentencePieceProcessor is then loaded, and the number of words in the vocabulary is saved for future use.",
         "type": "comment"
     },
-    "56": {
-        "file_id": 6,
+    "46": {
+        "file_id": 4,
         "content": "        self.bos_id: int = self.sp_model.bos_id()\n        self.eos_id: int = self.sp_model.eos_id()\n        self.pad_id: int = self.sp_model.pad_id()\n        # Initialize special token IDs for modalities\n        self.modality_tokens = {\n            \"image\": (\n                self.sp_model.piece_to_id(\"<img>\"),\n                self.sp_model.piece_to_id(\"</img>\"),\n            ),\n            \"audio\": (\n                self.sp_model.piece_to_id(\"<audio>\"),\n                self.sp_model.piece_to_id(\"</audio>\"),\n            ),\n        }\n    @staticmethod\n    def download_tokenizer(tokenizer_name: str) -> str:\n        \"\"\"Downloads the SentencePiece model file from HuggingFace Hub.\n        Args:\n            tokenizer_name (str): _description_\n        Raises:\n            ValueError: _description_\n            Exception: _description_\n        Returns:\n            str: _description_\n        \"\"\"\n        if tokenizer_name not in PRETRAINED_VOCAB_FILES_MAP[\"vocab_file\"]:\n            raise ValueError(f\"Tokenizer {tokenizer_name} is not available.\")",
         "type": "code",
         "location": "/gemini_torch/tokenizer.py:56-87"
     },
-    "57": {
-        "file_id": 6,
+    "47": {
+        "file_id": 4,
         "content": "This code is defining a class for tokenizer, which includes methods to initialize special token IDs and download the SentencePiece model from HuggingFace Hub. It also provides special token IDs for image and audio modalities. The download_tokenizer method takes in a tokenizer name as argument and returns the path of the downloaded model file if available, or raises ValueError if the specified tokenizer is not available.",
         "type": "comment"
     },
-    "58": {
-        "file_id": 6,
+    "48": {
+        "file_id": 4,
         "content": "        model_url = PRETRAINED_VOCAB_FILES_MAP[\"vocab_file\"][tokenizer_name]\n        model_path = os.path.join(\"data\", \"tokenizer.model\")\n        if not os.path.exists(\"data\"):\n            os.makedirs(\"data\")\n        # Downloading the tokenizer model file\n        response = requests.get(model_url)\n        if response.status_code == 200:\n            with open(model_path, \"wb\") as file:\n                file.write(response.content)\n            logger.info(f\"Downloaded SentencePiece model to {model_path}\")\n        else:\n            raise Exception(f\"Failed to download model from {model_url}\")\n        return model_path\n    def encode(\n        self, s: str, modality: str, bos: bool = True, eos: bool = True\n    ) -> List[int]:\n        \"\"\"Encodes a string into a list of token IDs.\n        Args:\n            s (str): _description_\n            modality (str): _description_\n            bos (bool, optional): _description_. Defaults to True.\n            eos (bool, optional): _description_. Defaults to True.\n        Returns:",
         "type": "code",
         "location": "/gemini_torch/tokenizer.py:89-117"
     },
-    "59": {
-        "file_id": 6,
+    "49": {
+        "file_id": 4,
         "content": "This code initializes a tokenizer by downloading the SentencePiece model file from the specified URL and saving it to the \"data/tokenizer.model\" location. The encode function takes a string, modality, and optional boolean values for BOS (beginning of sequence) and EOS (end of sequence) tokens, and returns a list of token IDs representing the encoded input.",
         "type": "comment"
     },
-    "60": {
-        "file_id": 6,
+    "50": {
+        "file_id": 4,
         "content": "            List[int]: _description_\n        \"\"\"\n        assert isinstance(s, str)\n        tokens = self.sp_model.encode(s)\n        # Prepend start and append end modality tokens if available\n        modality_start_id, modality_end_id = self.modality_tokens.get(\n            modality, (-1, -1)\n        )\n        if modality_start_id != -1 and modality_end_id != -1:\n            tokens = [modality_start_id] + tokens + [modality_end_id]\n        # Add BOS/EOS tokens if required\n        if bos:\n            tokens = [self.bos_id] + tokens\n        if eos:\n            tokens = tokens + [self.eos_id]\n        return tokens\n    def decode(self, tokens: List[int]) -> str:\n        \"\"\"decodes a list of token IDs into a string.\n        Args:\n            tokens (List[int]): _description_\n        Returns:\n            str: _description_\n        \"\"\"\n        # Remove modality tokens before decoding\n        for start_id, end_id in self.modality_tokens.values():\n            tokens = [t for t in tokens if t not in (start_id, end_id)]\n        return self.sp_model.decode(tokens)",
         "type": "code",
         "location": "/gemini_torch/tokenizer.py:118-150"
     },
-    "61": {
-        "file_id": 6,
+    "51": {
+        "file_id": 4,
         "content": "This code defines a tokenizer that encodes and decodes strings into a list of token IDs. It supports modality tokens, BOS (Beginning Of Sequence), and EOS (End Of Sequence) tokens. The encode function prepends and appends modality tokens if available, and adds BOS/EOS tokens if required. The decode function removes modality tokens before decoding the list of token IDs into a string.",
         "type": "comment"
     },
-    "62": {
-        "file_id": 7,
+    "52": {
+        "file_id": 5,
         "content": "/gemini_torch/transformer.py",
         "type": "filepath"
     },
-    "63": {
-        "file_id": 7,
+    "53": {
+        "file_id": 5,
         "content": "The code includes a Transformer model with customizable layers, dropout, rotary position embeddings for autoregressive and non-autoregressive training, Memory Transformers support, and allows users to select attention mechanism outputs.",
         "type": "summary"
     },
-    "64": {
-        "file_id": 7,
+    "54": {
+        "file_id": 5,
         "content": "import math\nfrom dataclasses import dataclass\nfrom functools import partial, wraps\nfrom inspect import isfunction\nfrom random import random\nfrom typing import Callable, List, Optional\nimport torch\nimport torch.nn.functional as F\nfrom einops import rearrange, reduce, repeat\nfrom torch import Tensor, einsum, nn\nfrom zeta.nn.attention.attend import Attend, Intermediates\nDEFAULT_DIM_HEAD = 64\n@dataclass\nclass LayerIntermediates:\n    hiddens: Optional[List[Tensor]] = None\n    attn_intermediates: Optional[List[Intermediates]] = None\n    layer_hiddens: Optional[List[Tensor]] = None\n    attn_z_loss: Optional[Tensor] = None\n# helpers\ndef exists(val):\n    return val is not None\ndef default(val, d):\n    if exists(val):\n        return val\n    return d() if isfunction(d) else d\ndef cast_tuple(val, depth):\n    return val if isinstance(val, tuple) else (val,) * depth\ndef divisible_by(num, den):\n    return (num % den) == 0\ndef maybe(fn):\n    @wraps(fn)\n    def inner(x, *args, **kwargs):\n        if not exists(x):\n            return x\n        return fn(x, *args, **kwargs)",
         "type": "code",
         "location": "/gemini_torch/transformer.py:1-51"
     },
-    "65": {
-        "file_id": 7,
+    "55": {
+        "file_id": 5,
         "content": "The code imports necessary libraries and defines a class `LayerIntermediates` with optional fields for various tensor lists and a loss tensor. It also includes several utility functions such as `exists`, `default`, `cast_tuple`, `divisible_by`, and `maybe`. These helpers will be used throughout the rest of the codebase to handle optional inputs and perform computations.",
         "type": "comment"
     },
-    "66": {
-        "file_id": 7,
+    "56": {
+        "file_id": 5,
         "content": "    return inner\nclass always:\n    def __init__(self, val):\n        self.val = val\n    def __call__(self, *args, **kwargs):\n        return self.val\nclass not_equals:\n    def __init__(self, val):\n        self.val = val\n    def __call__(self, x, *args, **kwargs):\n        return x != self.val\nclass equals:\n    def __init__(self, val):\n        self.val = val\n    def __call__(self, x, *args, **kwargs):\n        return x == self.val\ndef Sequential(*modules):\n    return nn.Sequential(*filter(exists, modules))\n# tensor helpers\ndef max_neg_value(tensor):\n    return -torch.finfo(tensor.dtype).max\ndef l2norm(t, groups=1):\n    t = rearrange(t, \"... (g d) -> ... g d\", g=groups)\n    t = F.normalize(t, p=2, dim=-1)\n    return rearrange(t, \"... g d -> ... (g d)\")\ndef pad_at_dim(t, pad, dim=-1, value=0.0):\n    dims_from_right = (-dim - 1) if dim < 0 else (t.ndim - dim - 1)\n    zeros = (0, 0) * dims_from_right\n    return F.pad(t, (*zeros, *pad), value=value)\ndef or_reduce(masks):\n    head, *body = masks\n    for rest in body:\n        head = head | rest",
         "type": "code",
         "location": "/gemini_torch/transformer.py:53-106"
     },
-    "67": {
-        "file_id": 7,
+    "57": {
+        "file_id": 5,
         "content": "The code contains classes for conditional operations, a Sequential function to create neural network architectures, and tensor manipulation functions like max_neg_value for clipping values, l2norm for normalizing tensor elements, pad_at_dim for padding tensors along specific dimensions, and or_reduce for logical OR operation reduction.",
         "type": "comment"
     },
-    "68": {
-        "file_id": 7,
+    "58": {
+        "file_id": 5,
         "content": "    return head\n# auxiliary loss helpers\ndef calc_z_loss(pre_softmax_attns: List[Tensor], mask=None, weight=1.0):\n    # the same loss applied to the mixture of experts router logits in https://arxiv.org/abs/2202.08906\n    # in the paper, in a tiny footnote, they mention using it on attention logits with stabilizing effects\n    # also used in PaLM as one of the measures\n    lse = 0.0\n    for attn in pre_softmax_attns:\n        lse = lse + attn.logsumexp(dim=-1)\n    loss = torch.square(lse)\n    loss = reduce(loss, \"b h n -> b n\", \"sum\")\n    if not exists(mask):\n        return loss.mean() * weight\n    loss = loss[mask].sum() / mask.sum().clamp(min=1e-5)\n    return loss * weight\n# init helpers\ndef init_zero_(layer):\n    nn.init.constant_(layer.weight, 0.0)\n    if exists(layer.bias):\n        nn.init.constant_(layer.bias, 0.0)\n# keyword argument helpers\ndef pick_and_pop(keys, d):\n    values = list(map(lambda key: d.pop(key), keys))\n    return dict(zip(keys, values))\ndef group_dict_by_key(cond, d):\n    return_val = [dict(), dict()]",
         "type": "code",
         "location": "/gemini_torch/transformer.py:107-151"
     },
-    "69": {
-        "file_id": 7,
+    "59": {
+        "file_id": 5,
         "content": "The code snippet contains several functions related to transformers. It defines a function `calc_z_loss` that calculates the loss based on attention logits, used in papers like https://arxiv.org/abs/2202.08906 and employed by PaLM. There is also an `init_zero_` function initializing layers with zeros, and two helper functions: `pick_and_pop` for popping values from a dictionary using keys, and `group_dict_by_key` for grouping dictionary items based on specific keys.",
         "type": "comment"
     },
-    "70": {
-        "file_id": 7,
+    "60": {
+        "file_id": 5,
         "content": "    for key in d.keys():\n        match = bool(cond(key))\n        ind = int(not match)\n        return_val[ind][key] = d[key]\n    return (*return_val,)\ndef string_begins_with(prefix, str):\n    return str.startswith(prefix)\ndef group_by_key_prefix(prefix, d):\n    return group_dict_by_key(partial(string_begins_with, prefix), d)\ndef groupby_prefix_and_trim(prefix, d):\n    kwargs_with_prefix, kwargs = group_dict_by_key(\n        partial(string_begins_with, prefix), d\n    )\n    kwargs_without_prefix = dict(\n        map(lambda x: (x[0][len(prefix) :], x[1]), tuple(kwargs_with_prefix.items()))\n    )\n    return kwargs_without_prefix, kwargs\n# initializations\ndef deepnorm_init(\n    transformer, beta, module_name_match_list=[\".ff.\", \".to_v\", \".to_out\"]\n):\n    for name, module in transformer.named_modules():\n        if type(module) != nn.Linear:\n            continue\n        needs_beta_gain = any(\n            map(lambda substr: substr in name, module_name_match_list)\n        )\n        gain = beta if needs_beta_gain else 1\n        nn.init.xavier_normal_(module.weight.data, gain=gain)",
         "type": "code",
         "location": "/gemini_torch/transformer.py:152-191"
     },
-    "71": {
-        "file_id": 7,
+    "61": {
+        "file_id": 5,
         "content": "This code defines functions for grouping dictionary keys by prefix, initializing a transformer with deep normalization, and setting module weights based on certain conditions. The \"deepnorm_init\" function iterates through the named modules of a transformer, checks if they are of type nn.Linear, determines if they need to be initialized with beta gain based on their names, and then sets their weight data using xavier_normal_ initializer with the appropriate gain value.",
         "type": "comment"
     },
-    "72": {
-        "file_id": 7,
+    "62": {
+        "file_id": 5,
         "content": "        if exists(module.bias):\n            nn.init.constant_(module.bias.data, 0)\n# structured dropout, more effective than traditional attention dropouts\ndef dropout_seq(seq, mask, dropout):\n    b, n, *_, device = *seq.shape, seq.device\n    logits = torch.randn(b, n, device=device)\n    if exists(mask):\n        mask_value = max_neg_value(logits)\n        logits = logits.masked_fill(~mask, mask_value)\n    keep_prob = 1.0 - dropout\n    num_keep = max(1, int(keep_prob * n))\n    keep_indices = logits.topk(num_keep, dim=1).indices\n    batch_indices = torch.arange(b, device=device)\n    batch_indices = rearrange(batch_indices, \"b -> b 1\")\n    seq = seq[batch_indices, keep_indices]\n    if exists(mask):\n        seq_counts = mask.sum(dim=-1)\n        seq_keep_counts = torch.ceil(seq_counts * keep_prob).int()\n        keep_mask = torch.arange(num_keep, device=device) < rearrange(\n            seq_keep_counts, \"b -> b 1\"\n        )\n        mask = mask[batch_indices, keep_indices] & keep_mask\n    return seq, mask\n# activations",
         "type": "code",
         "location": "/gemini_torch/transformer.py:193-229"
     },
-    "73": {
-        "file_id": 7,
+    "63": {
+        "file_id": 5,
         "content": "The code snippet initializes the module's bias with a constant value of 0, and defines a dropout_seq function that applies structured dropout to sequences while considering mask. It generates random logits, selects a specified number of keep indices, assigns them based on batch indices, adjusts the mask if present, and finally returns the sequence and mask after applying dropout.",
         "type": "comment"
     },
-    "74": {
-        "file_id": 7,
+    "64": {
+        "file_id": 5,
         "content": "class ReluSquared(nn.Module):\n    def forward(self, x):\n        return F.relu(x) ** 2\n# embedding\nclass TokenEmbedding(nn.Module):\n    def __init__(self, dim, num_tokens, l2norm_embed=False):\n        super().__init__()\n        self.l2norm_embed = l2norm_embed\n        self.emb = nn.Embedding(num_tokens, dim)\n    def forward(self, x):\n        token_emb = self.emb(x)\n        return l2norm(token_emb) if self.l2norm_embed else token_emb\n# positional embeddings\nclass AbsolutePositionalEmbedding(nn.Module):\n    def __init__(self, dim, max_seq_len, l2norm_embed=False):\n        super().__init__()\n        self.scale = dim**-0.5 if not l2norm_embed else 1.0\n        self.max_seq_len = max_seq_len\n        self.l2norm_embed = l2norm_embed\n        self.emb = nn.Embedding(max_seq_len, dim)\n    def forward(self, x, pos=None):\n        seq_len, device = x.shape[1], x.device\n        assert (\n            seq_len <= self.max_seq_len\n        ), f\"you are passing in a sequence length of {seq_len} but your absolute positional embedding has a max sequence length of {self.max_seq_len}\"",
         "type": "code",
         "location": "/gemini_torch/transformer.py:232-266"
     },
-    "75": {
-        "file_id": 7,
+    "65": {
+        "file_id": 5,
         "content": "ReluSquared: applies ReLU activation function and squares the output.\nTokenEmbedding: embedding layer for tokens, optionally applies L2-normalization.\nAbsolutePositionalEmbedding: adds absolute positional embeddings to input, optionally L2-normalizes.",
         "type": "comment"
     },
-    "76": {
-        "file_id": 7,
+    "66": {
+        "file_id": 5,
         "content": "        if not exists(pos):\n            pos = torch.arange(seq_len, device=device)\n        pos_emb = self.emb(pos)\n        pos_emb = pos_emb * self.scale\n        return l2norm(pos_emb) if self.l2norm_embed else pos_emb\nclass ScaledSinusoidalEmbedding(nn.Module):\n    def __init__(self, dim, theta=10000):\n        super().__init__()\n        assert divisible_by(dim, 2)\n        self.scale = nn.Parameter(torch.ones(1) * dim**-0.5)\n        half_dim = dim // 2\n        freq_seq = torch.arange(half_dim).float() / half_dim\n        inv_freq = theta**-freq_seq\n        self.register_buffer(\"inv_freq\", inv_freq, persistent=False)\n    def forward(self, x, pos=None):\n        seq_len, device = x.shape[1], x.device\n        if not exists(pos):\n            pos = torch.arange(seq_len, device=device)\n        emb = einsum(\"i, j -> i j\", pos, self.inv_freq)\n        emb = torch.cat((emb.sin(), emb.cos()), dim=-1)\n        return emb * self.scale\nclass RelativePositionBias(nn.Module):\n    def __init__(self, scale, causal=False, num_buckets=32, max_distance=128, heads=8):",
         "type": "code",
         "location": "/gemini_torch/transformer.py:268-299"
     },
-    "77": {
-        "file_id": 7,
+    "67": {
+        "file_id": 5,
         "content": "The code defines a class for scaled sinusoidal positional embeddings and a relative position bias. The embeddings are computed using sinusoidal functions of the form x = a * sin(2πb * k / q) + c, where 'a', 'b', 'c' and 'q' are constants, and 'k' is the frequency index. These embeddings are then normalized by dividing by the square root of their dimension. The relative position bias class computes positional embeddings for each position, taking into account the distance between positions in a sequence. It uses buckets to group similar distances together and applies a different scaling factor to each bucket.",
         "type": "comment"
     },
-    "78": {
-        "file_id": 7,
+    "68": {
+        "file_id": 5,
         "content": "        super().__init__()\n        self.scale = scale\n        self.causal = causal\n        self.num_buckets = num_buckets\n        self.max_distance = max_distance\n        self.relative_attention_bias = nn.Embedding(num_buckets, heads)\n    @staticmethod\n    def _relative_position_bucket(\n        relative_position, causal=True, num_buckets=32, max_distance=128\n    ):\n        ret = 0\n        n = -relative_position\n        if not causal:\n            num_buckets //= 2\n            ret += (n < 0).long() * num_buckets\n            n = torch.abs(n)\n        else:\n            n = torch.max(n, torch.zeros_like(n))\n        max_exact = num_buckets // 2\n        is_small = n < max_exact\n        val_if_large = (\n            max_exact\n            + (\n                torch.log(n.float() / max_exact)\n                / math.log(max_distance / max_exact)\n                * (num_buckets - max_exact)\n            ).long()\n        )\n        val_if_large = torch.min(\n            val_if_large, torch.full_like(val_if_large, num_buckets - 1)\n        )",
         "type": "code",
         "location": "/gemini_torch/transformer.py:300-333"
     },
-    "79": {
-        "file_id": 7,
+    "69": {
+        "file_id": 5,
         "content": "This code initializes a class with parameters like scale, causal, num_buckets, and max_distance. It also defines an embedding layer for relative attention bias. The _relative_position_bucket method calculates the position bucket based on the given position, considering causality and position constraints.",
         "type": "comment"
     },
-    "80": {
-        "file_id": 7,
+    "70": {
+        "file_id": 5,
         "content": "        ret += torch.where(is_small, n, val_if_large)\n        return ret\n    @property\n    def device(self):\n        return next(self.parameters()).device\n    def forward(self, i, j):\n        device = self.device\n        q_pos = torch.arange(j - i, j, dtype=torch.long, device=device)\n        k_pos = torch.arange(j, dtype=torch.long, device=device)\n        rel_pos = k_pos[None, :] - q_pos[:, None]\n        rp_bucket = self._relative_position_bucket(\n            rel_pos,\n            causal=self.causal,\n            num_buckets=self.num_buckets,\n            max_distance=self.max_distance,\n        )\n        values = self.relative_attention_bias(rp_bucket)\n        bias = rearrange(values, \"i j h -> h i j\")\n        return bias * self.scale\nclass DynamicPositionBias(nn.Module):\n    def __init__(self, dim, *, heads, depth, log_distance=False, norm=False):\n        super().__init__()\n        assert (\n            depth >= 1\n        ), \"depth for dynamic position bias MLP must be greater or equal to 1\"\n        self.log_distance = log_distance",
         "type": "code",
         "location": "/gemini_torch/transformer.py:335-364"
     },
-    "81": {
-        "file_id": 7,
+    "71": {
+        "file_id": 5,
         "content": "This code defines a DynamicPositionBias class, which is used to calculate position biases for attention mechanisms in transformers. The forward function takes input indices i and j, and returns a bias tensor that will be multiplied by the attention scores. This helps improve the model's understanding of relative positions between tokens.",
         "type": "comment"
     },
-    "82": {
-        "file_id": 7,
+    "72": {
+        "file_id": 5,
         "content": "        self.mlp = nn.ModuleList([])\n        self.mlp.append(\n            Sequential(\n                nn.Linear(1, dim), nn.LayerNorm(dim) if norm else None, nn.SiLU()\n            )\n        )\n        for _ in range(depth - 1):\n            self.mlp.append(\n                Sequential(\n                    nn.Linear(dim, dim), nn.LayerNorm(dim) if norm else None, nn.SiLU()\n                )\n            )\n        self.mlp.append(nn.Linear(dim, heads))\n    @property\n    def device(self):\n        return next(self.parameters()).device\n    def forward(self, i, j):\n        assert i == j\n        n, device = j, self.device\n        # get the (n x n) matrix of distances\n        seq_arange = torch.arange(n, device=device)\n        context_arange = torch.arange(n, device=device)\n        indices = rearrange(seq_arange, \"i -> i 1\") - rearrange(\n            context_arange, \"j -> 1 j\"\n        )\n        indices += n - 1\n        # input to continuous positions MLP\n        pos = torch.arange(-n + 1, n, device=device).float()\n        pos = rearrange(pos, \"... -> ... 1\")",
         "type": "code",
         "location": "/gemini_torch/transformer.py:366-401"
     },
-    "83": {
-        "file_id": 7,
+    "73": {
+        "file_id": 5,
         "content": "The code defines a class with an MLP (Multi-Layer Perceptron) used for position embeddings in a transformer model. The MLP takes an input dimension and applies a sequence of linear layers, layer normalization (optional), and SiLU activation function. It also has properties to get the device and a forward method that calculates the position embeddings based on sequence and context ranges.",
         "type": "comment"
     },
-    "84": {
-        "file_id": 7,
+    "74": {
+        "file_id": 5,
         "content": "        if self.log_distance:\n            pos = torch.sign(pos) * torch.log(\n                pos.abs() + 1\n            )  # log of distance is sign(rel_pos) * log(abs(rel_pos) + 1)\n        for layer in self.mlp:\n            pos = layer(pos)\n        # get position biases\n        bias = pos[indices]\n        bias = rearrange(bias, \"i j h -> h i j\")\n        return bias\nclass AlibiPositionalBias(nn.Module):\n    def __init__(self, heads, total_heads, **kwargs):\n        super().__init__()\n        self.heads = heads\n        self.total_heads = total_heads\n        slopes = Tensor(self._get_slopes(heads))\n        slopes = rearrange(slopes, \"h -> h 1 1\")\n        self.register_buffer(\"slopes\", slopes, persistent=False)\n        self.register_buffer(\"bias\", None, persistent=False)\n    def get_bias(self, i, j, device):\n        i_arange = torch.arange(j - i, j, device=device)\n        j_arange = torch.arange(j, device=device)\n        bias = -torch.abs(\n            rearrange(j_arange, \"j -> 1 1 j\") - rearrange(i_arange, \"i -> 1 i 1\")",
         "type": "code",
         "location": "/gemini_torch/transformer.py:403-432"
     },
-    "85": {
-        "file_id": 7,
+    "75": {
+        "file_id": 5,
         "content": "The code defines a class called AlibiPositionalBias that inherits from nn.Module. This class calculates and returns positional biases for some transformer model layer. It uses torch functions like sign and log to manipulate the positions, then applies some rearrangement operations to reshape tensors. The code also utilizes a register_buffer to store slopes and bias variables.",
         "type": "comment"
     },
-    "86": {
-        "file_id": 7,
+    "76": {
+        "file_id": 5,
         "content": "        )\n        return bias\n    @staticmethod\n    def _get_slopes(heads):\n        def get_slopes_power_of_2(n):\n            start = 2 ** (-(2 ** -(math.log2(n) - 3)))\n            ratio = start\n            return [start * ratio**i for i in range(n)]\n        if math.log2(heads).is_integer():\n            return get_slopes_power_of_2(heads)\n        closest_power_of_2 = 2 ** math.floor(math.log2(heads))\n        return (\n            get_slopes_power_of_2(closest_power_of_2)\n            + get_slopes_power_of_2(2 * closest_power_of_2)[0::2][\n                : heads - closest_power_of_2\n            ]\n        )\n    @property\n    def device(self):\n        return next(self.buffers()).device\n    def forward(self, i, j):\n        h, device = self.total_heads, self.device\n        if exists(self.bias) and self.bias.shape[-1] >= j and self.bias.shape[-2] >= i:\n            return self.bias[..., :i, :j]\n        bias = self.get_bias(i, j, device)\n        bias = bias * self.slopes\n        num_heads_unalibied = h - bias.shape[0]\n        bias = pad_at_dim(bias, (0, num_heads_unalibied), dim=0)",
         "type": "code",
         "location": "/gemini_torch/transformer.py:433-468"
     },
-    "87": {
-        "file_id": 7,
+    "77": {
+        "file_id": 5,
         "content": "This code defines a class with methods for getting and setting biases based on head counts. It uses logarithmic calculations to determine slopes for the biases, and ensures correct device assignment. The `forward` method handles retrieving or generating biases and padding if necessary.",
         "type": "comment"
     },
-    "88": {
-        "file_id": 7,
+    "78": {
+        "file_id": 5,
         "content": "        self.register_buffer(\"bias\", bias, persistent=False)\n        return self.bias\nclass RotaryEmbedding(nn.Module):\n    def __init__(\n        self,\n        dim,\n        use_xpos=False,\n        scale_base=512,\n        interpolation_factor=1.0,\n        base=10000,\n        base_rescale_factor=1.0,\n    ):\n        super().__init__()\n        # proposed by reddit user bloc97, to rescale rotary embeddings to longer sequence length without fine-tuning\n        # has some connection to NTK literature\n        # https://www.reddit.com/r/LocalLLaMA/comments/14lz7j5/ntkaware_scaled_rope_allows_llama_models_to_have/\n        base *= base_rescale_factor ** (dim / (dim - 2))\n        inv_freq = 1.0 / (base ** (torch.arange(0, dim, 2).float() / dim))\n        self.register_buffer(\"inv_freq\", inv_freq)\n        assert interpolation_factor >= 1.0\n        self.interpolation_factor = interpolation_factor\n        if not use_xpos:\n            self.register_buffer(\"scale\", None)\n            return\n        scale = (torch.arange(0, dim, 2) + 0.4 * dim) / (1.4 * dim)",
         "type": "code",
         "location": "/gemini_torch/transformer.py:469-500"
     },
-    "89": {
-        "file_id": 7,
+    "79": {
+        "file_id": 5,
         "content": "This code registers a buffer \"bias\" to the class and returns it. It then initializes a RotaryEmbedding class with parameters like dim, use_xpos, scale_base, interpolation_factor, and base_rescale_factor. If use_xpos is True, it also creates a \"scale\" buffer.",
         "type": "comment"
     },
-    "90": {
-        "file_id": 7,
+    "80": {
+        "file_id": 5,
         "content": "        self.scale_base = scale_base\n        self.register_buffer(\"scale\", scale)\n    def forward(self, seq_len, device):\n        t = torch.arange(seq_len, device=device).type_as(self.inv_freq)\n        t = t / self.interpolation_factor\n        freqs = torch.einsum(\"i , j -> i j\", t, self.inv_freq)\n        freqs = torch.cat((freqs, freqs), dim=-1)\n        if not exists(self.scale):\n            return freqs, 1.0\n        power = (\n            torch.arange(seq_len, device=device) - (seq_len // 2)\n        ) / self.scale_base\n        scale = self.scale ** rearrange(power, \"n -> n 1\")\n        scale = torch.cat((scale, scale), dim=-1)\n        return freqs, scale\ndef rotate_half(x):\n    x = rearrange(x, \"... (j d) -> ... j d\", j=2)\n    x1, x2 = x.unbind(dim=-2)\n    return torch.cat((-x2, x1), dim=-1)\ndef apply_rotary_pos_emb(t, freqs, scale=1):\n    seq_len = t.shape[-2]\n    freqs = freqs[-seq_len:, :]\n    return (t * freqs.cos() * scale) + (rotate_half(t) * freqs.sin() * scale)\n# norms\nclass Scale(nn.Module):\n    def __init__(self, value, fn):",
         "type": "code",
         "location": "/gemini_torch/transformer.py:502-540"
     },
-    "91": {
-        "file_id": 7,
+    "81": {
+        "file_id": 5,
         "content": "This code defines a class called `Scale` that initializes a scale value and a function (`fn`) in its constructor. The `forward` method computes the rotary position embedding by applying a rotation to the input sequence based on the provided frequency, interpolation factor, and scale value. The `rotate_half` function splits the input tensor along dimension -2 and concatenates the second half with a negative sign. Finally, the `apply_rotary_pos_emb` function computes the rotary position embedding using trigonometric functions (cosine and sine).",
         "type": "comment"
     },
-    "92": {
-        "file_id": 7,
+    "82": {
+        "file_id": 5,
         "content": "        super().__init__()\n        self.value = value\n        self.fn = fn\n    def forward(self, x, **kwargs):\n        out = self.fn(x, **kwargs)\n        def scale_fn(t):\n            return t * self.value\n        if not isinstance(out, tuple):\n            return scale_fn(out)\n        return (scale_fn(out[0]), *out[1:])\nclass ScaleNorm(nn.Module):\n    def __init__(self, dim, eps=1e-5):\n        super().__init__()\n        self.eps = eps\n        self.g = nn.Parameter(torch.ones(1) * (dim**-0.5))\n    def forward(self, x):\n        norm = torch.norm(x, dim=-1, keepdim=True)\n        return x / norm.clamp(min=self.eps) * self.g\nclass RMSNorm(nn.Module):\n    def __init__(self, dim):\n        super().__init__()\n        self.scale = dim**0.5\n        self.g = nn.Parameter(torch.ones(dim))\n    def forward(self, x):\n        return F.normalize(x, dim=-1) * self.scale * self.g\nclass SimpleRMSNorm(nn.Module):\n    def __init__(self, dim):\n        super().__init__()\n        self.scale = dim**0.5\n    def forward(self, x):\n        return F.normalize(x, dim=-1) * self.scale",
         "type": "code",
         "location": "/gemini_torch/transformer.py:541-584"
     },
-    "93": {
-        "file_id": 7,
+    "83": {
+        "file_id": 5,
         "content": "This code defines several custom normalization layers (ScaleNorm, RMSNorm, and SimpleRMSNorm) that can be used with PyTorch. These layers perform different types of normalization operations on input tensors. The forward method in each class defines how the normalization is performed. ScaleNorm scales the input by dividing it by its norm and then scaling by a learnable parameter g. RMSNorm first performs instance-wise normalization using F.normalize, then scales by a learnable parameter g and a square root of the dimension size. SimpleRMSNorm performs instance-wise normalization without any scale parameters.",
         "type": "comment"
     },
-    "94": {
-        "file_id": 7,
+    "84": {
+        "file_id": 5,
         "content": "# residual and residual gates\nclass Residual(nn.Module):\n    def __init__(self, dim, scale_residual=False, scale_residual_constant=1.0):\n        super().__init__()\n        self.residual_scale = nn.Parameter(torch.ones(dim)) if scale_residual else None\n        self.scale_residual_constant = scale_residual_constant\n    def forward(self, x, residual):\n        if exists(self.residual_scale):\n            residual = residual * self.residual_scale\n        if self.scale_residual_constant != 1:\n            residual = residual * self.scale_residual_constant\n        return x + residual\nclass GRUGating(nn.Module):\n    def __init__(self, dim, scale_residual=False, **kwargs):\n        super().__init__()\n        self.gru = nn.GRUCell(dim, dim)\n        self.residual_scale = nn.Parameter(torch.ones(dim)) if scale_residual else None\n    def forward(self, x, residual):\n        if exists(self.residual_scale):\n            residual = residual * self.residual_scale\n        gated_output = self.gru(\n            rearrange(x, \"b n d -> (b n) d\"), rearrange(residual, \"b n d -> (b n) d\")",
         "type": "code",
         "location": "/gemini_torch/transformer.py:587-617"
     },
-    "95": {
-        "file_id": 7,
+    "85": {
+        "file_id": 5,
         "content": "This code defines two classes: Residual and GRUGating. Residual class handles residual connections with optional scaling, while GRUGating class implements a Gated Recurrent Unit (GRU) gating mechanism for processing sequences. The forward functions scale the residuals if needed before adding them to the input, and the GRU cell processes the input and residual in batched format.",
         "type": "comment"
     },
-    "96": {
-        "file_id": 7,
+    "86": {
+        "file_id": 5,
         "content": "        )\n        return gated_output.reshape_as(x)\n# token shifting\ndef shift(t, amount, mask=None):\n    if amount == 0:\n        return t\n    else:\n        amount = min(amount, t.shape[1])\n    if exists(mask):\n        t = t.masked_fill(~mask[..., None], 0.0)\n    return pad_at_dim(t, (amount, -amount), dim=-2, value=0.0)\nclass ShiftTokens(nn.Module):\n    def __init__(self, shifts, fn):\n        super().__init__()\n        self.fn = fn\n        self.shifts = tuple(shifts)\n    def forward(self, x, **kwargs):\n        mask = kwargs.get(\"mask\", None)\n        shifts = self.shifts\n        segments = len(shifts)\n        feats_per_shift = x.shape[-1] // segments\n        splitted = x.split(feats_per_shift, dim=-1)\n        segments_to_shift, rest = splitted[:segments], splitted[segments:]\n        segments_to_shift = list(\n            map(lambda args: shift(*args, mask=mask), zip(segments_to_shift, shifts))\n        )\n        x = torch.cat((*segments_to_shift, *rest), dim=-1)\n        return self.fn(x, **kwargs)\n# feedforward\nclass GLU(nn.Module):",
         "type": "code",
         "location": "/gemini_torch/transformer.py:618-661"
     },
-    "97": {
-        "file_id": 7,
+    "87": {
+        "file_id": 5,
         "content": "This code defines a ShiftTokens module which shifts certain segments of input features by a specified amount. It also includes a GLU (Gated Linear Units) function, and the code snippet demonstrates how to use these components in a FeedForward class. The feedforward operation applies both gating and linear operations on its input, effectively combining information from different depths of the encoder-decoder layers.",
         "type": "comment"
     },
-    "98": {
-        "file_id": 7,
+    "88": {
+        "file_id": 5,
         "content": "    def __init__(self, dim_in, dim_out, activation: Callable, mult_bias=False):\n        super().__init__()\n        self.act = activation\n        self.proj = nn.Linear(dim_in, dim_out * 2)\n        self.mult_bias = nn.Parameter(torch.ones(dim_out)) if mult_bias else 1.0\n    def forward(self, x):\n        x, gate = self.proj(x).chunk(2, dim=-1)\n        return x * self.act(gate) * self.mult_bias\nclass FeedForward(nn.Module):\n    def __init__(\n        self,\n        dim,\n        dim_out=None,\n        mult=4,\n        glu=False,\n        glu_mult_bias=False,\n        swish=False,\n        relu_squared=False,\n        post_act_ln=False,\n        dropout=0.0,\n        no_bias=False,\n        zero_init_output=False,\n    ):\n        super().__init__()\n        inner_dim = int(dim * mult)\n        dim_out = default(dim_out, dim)\n        if relu_squared:\n            activation = ReluSquared()\n        elif swish:\n            activation = nn.SiLU()\n        else:\n            activation = nn.GELU()\n        if glu:\n            project_in = GLU(dim, inner_dim, activation, mult_bias=glu_mult_bias)",
         "type": "code",
         "location": "/gemini_torch/transformer.py:662-700"
     },
-    "99": {
-        "file_id": 7,
+    "89": {
+        "file_id": 5,
         "content": "This code initializes a FeedForward module with an optional dimension output, multiplier, and activation function. It contains classes for the FeedForward module and its initialization process. The activation function can be GELU, SiLU or ReLuSquared depending on the input parameters. It also includes options for post-activation layer normalization and dropout.",
+        "type": "comment"
+    },
+    "90": {
+        "file_id": 5,
+        "content": "        else:\n            project_in = nn.Sequential(\n                nn.Linear(dim, inner_dim, bias=not no_bias), activation\n            )\n        self.ff = Sequential(\n            project_in,\n            nn.LayerNorm(inner_dim) if post_act_ln else None,\n            nn.Dropout(dropout),\n            nn.Linear(inner_dim, dim_out, bias=not no_bias),\n        )\n        # init last linear layer to 0\n        if zero_init_output:\n            init_zero_(self.ff[-1])\n    def forward(self, x):\n        return self.ff(x)\n# attention. it is all we need\nclass Attention(nn.Module):\n    def __init__(\n        self,\n        dim,\n        dim_head=DEFAULT_DIM_HEAD,\n        heads=8,\n        causal=False,\n        flash=False,\n        talking_heads=False,\n        head_scale=False,\n        sparse_topk=None,\n        num_mem_kv=0,\n        dropout=0.0,\n        on_attn=False,\n        gate_values=False,\n        zero_init_output=False,\n        max_attend_past=None,\n        qk_norm=False,\n        qk_norm_groups=1,\n        qk_norm_scale=10,\n        qk_norm_dim_scale=False,",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:701-744"
+    },
+    "91": {
+        "file_id": 5,
+        "content": "The code defines a module for self-attention and feed-forward layers in a transformer architecture. It initializes the layers with specified dimensions, includes optional parameters for dropout, layer normalization, and other features like causal and flash attention. The forward function performs the attention calculation and returns the output.",
+        "type": "comment"
+    },
+    "92": {
+        "file_id": 5,
+        "content": "        one_kv_head=False,\n        kv_heads=None,\n        shared_kv=False,\n        value_dim_head=None,\n        tensor_product=False,  # https://arxiv.org/abs/2208.06061\n        cascading_heads=False,\n        add_zero_kv=False,  # same as add_zero_attn in pytorch\n        onnxable=False,\n    ):\n        super().__init__()\n        self.scale = dim_head**-0.5\n        self.heads = heads\n        self.causal = causal\n        self.max_attend_past = max_attend_past\n        assert not (\n            exists(kv_heads) and one_kv_head\n        ), \"either attn_one_kv_head is set to True (in which case kv_heads is set to 1), or attn_kv_heads is set, but not both\"\n        value_dim_head = default(value_dim_head, dim_head)\n        kv_heads = default(kv_heads, heads)\n        kv_heads = 1 if one_kv_head else kv_heads\n        assert divisible_by(heads, kv_heads)\n        self.kv_heads = kv_heads\n        q_dim = dim_head * heads\n        k_dim = dim_head * kv_heads\n        v_dim = value_dim_head * kv_heads\n        out_dim = value_dim_head * heads",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:745-776"
+    },
+    "93": {
+        "file_id": 5,
+        "content": "This code initializes a transformer layer with configurable parameters such as the number of heads, causal masking, maximum attended past steps, and more. The code checks for inconsistencies in the input arguments and calculates dimensions for query (Q), key (K), and value (V) matrices based on the provided inputs.",
+        "type": "comment"
+    },
+    "94": {
+        "file_id": 5,
+        "content": "        self.to_q = nn.Linear(dim, q_dim, bias=False)\n        self.to_k = nn.Linear(dim, k_dim, bias=False)\n        # shared key / values, for further memory savings during inference\n        assert not (\n            shared_kv and value_dim_head != dim_head\n        ), \"key and value head dimensions must be equal for shared key / values\"\n        self.to_v = nn.Linear(dim, v_dim, bias=False) if not shared_kv else None\n        # relations projection from tp-attention\n        self.to_r = nn.Linear(dim, v_dim, bias=False) if tensor_product else None\n        # add GLU gating for aggregated values, from alphafold2\n        self.to_v_gate = None\n        if gate_values:\n            self.to_v_gate = nn.Linear(dim, out_dim)\n            nn.init.constant_(self.to_v_gate.weight, 0)\n            nn.init.constant_(self.to_v_gate.bias, 1)\n        # cosine sim attention\n        self.qk_norm = qk_norm\n        self.qk_norm_groups = qk_norm_groups\n        self.qk_norm_scale = qk_norm_scale\n        # whether to use the rmsnorm (equivalent to cosine sim attention when scale is equal to 1) - https://arxiv.org/abs/2302.05442",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:778-802"
+    },
+    "95": {
+        "file_id": 5,
+        "content": "The code initializes layers for a transformer model. It includes linear layers for query (to_q), key (to_k) and value (to_v) projections, as well as a relation projection layer (to_r). The code also checks for shared key/value dimensions and whether to use gating for aggregated values (to_v_gate). Additionally, it sets parameters for cosine similarity attention (qk_norm, qk_norm_groups, qk_norm_scale) and determines if RMSNorm should be used.",
+        "type": "comment"
+    },
+    "96": {
+        "file_id": 5,
+        "content": "        self.qk_norm_dim_scale = qk_norm_dim_scale\n        self.qk_norm_q_scale = self.qk_norm_k_scale = 1\n        if qk_norm and qk_norm_dim_scale:\n            self.qk_norm_q_scale = nn.Parameter(torch.ones(dim_head))\n            self.qk_norm_k_scale = nn.Parameter(torch.ones(dim_head))\n        assert (not qk_norm) or divisible_by(\n            dim_head, qk_norm_groups\n        ), \"dimension per attention head must be divisible by the qk norm groups\"\n        assert not (\n            qk_norm and (dim_head // qk_norm_groups) <= 2\n        ), \"the group dimension may be too small (2 was too small in my tests, but 4 still works, surprisingly)\"\n        # attend class - includes core attention algorithm + talking heads\n        self.attend = Attend(\n            heads=heads,\n            causal=causal,\n            talking_heads=talking_heads,\n            dropout=dropout,\n            sparse_topk=sparse_topk,\n            qk_norm=qk_norm,\n            scale=qk_norm_scale if qk_norm else self.scale,\n            add_zero_kv=add_zero_kv,",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:803-827"
+    },
+    "97": {
+        "file_id": 5,
+        "content": "This code initializes the Transformer's attention module with optional normalization for query and key dimensions, and applies the core attention algorithm. It also includes parameters for causal masking, talking heads, dropout, sparse top-k sampling, and whether to add zero vectors for keys and values.",
+        "type": "comment"
+    },
+    "98": {
+        "file_id": 5,
+        "content": "            flash=flash,\n            onnxable=onnxable,\n        )\n        # head scaling\n        self.head_scale = head_scale\n        if head_scale:\n            self.head_scale_params = nn.Parameter(torch.ones(1, heads, 1, 1))\n        # explicit topk sparse attention\n        self.sparse_topk = sparse_topk\n        # add memory key / values\n        self.num_mem_kv = num_mem_kv\n        if num_mem_kv > 0:\n            self.mem_k = nn.Parameter(torch.randn(heads, num_mem_kv, dim_head))\n            self.mem_v = nn.Parameter(torch.randn(heads, num_mem_kv, dim_head))\n        # attention on attention\n        self.attn_on_attn = on_attn\n        self.to_out = (\n            nn.Sequential(nn.Linear(out_dim, dim * 2, bias=False), nn.GLU())\n            if on_attn\n            else nn.Linear(out_dim, dim, bias=False)\n        )\n        # init output projection 0\n        if zero_init_output:\n            init_zero_(self.to_out)\n    def forward(\n        self,\n        x,\n        context=None,\n        mask=None,\n        context_mask=None,",
+        "type": "code",
+        "location": "/gemini_torch/transformer.py:828-863"
+    },
+    "99": {
+        "file_id": 5,
+        "content": "This code creates a transformer model with optional features like head scaling, sparse attention, memory key/values, and attention on attention. It initializes various layers and parameters based on provided arguments. The forward function performs the forward pass through these layers to output the final result.",
         "type": "comment"
     }
 }
