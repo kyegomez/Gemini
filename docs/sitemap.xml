@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+<!-- created with Free Online Sitemap Generator www.xml-sitemaps.com -->
+
+
+<url>
+  <loc>https://james4ever0.github.io/Gemini?q=/README.md</loc>
+  <lastmod>2023-12-28T09:21:02+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+
+<url>
+  <loc>https://james4ever0.github.io/Gemini?q=/example.py</loc>
+  <lastmod>2023-12-28T09:21:02+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+
+<url>
+  <loc>https://james4ever0.github.io/Gemini?q=/gemini_torch/__init__.py</loc>
+  <lastmod>2023-12-28T09:21:02+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+
+<url>
+  <loc>https://james4ever0.github.io/Gemini?q=/gemini_torch/model.py</loc>
+  <lastmod>2023-12-28T09:21:02+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+
+<url>
+  <loc>https://james4ever0.github.io/Gemini?q=/gemini_torch/tokenizer.py</loc>
+  <lastmod>2023-12-28T09:21:02+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+
+<url>
+  <loc>https://james4ever0.github.io/Gemini?q=/gemini_torch/transformer.py</loc>
+  <lastmod>2023-12-28T09:21:02+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+
+<url>
+  <loc>https://james4ever0.github.io/Gemini?q=/gemini_torch/utils.py</loc>
+  <lastmod>2023-12-28T09:21:02+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+
+<url>
+  <loc>https://james4ever0.github.io/Gemini?q=/pyproject.toml</loc>
+  <lastmod>2023-12-28T09:21:02+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+
+<url>
+  <loc>https://james4ever0.github.io/Gemini?q=/requirements.txt</loc>
+  <lastmod>2023-12-28T09:21:02+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+
+<url>
+  <loc>https://james4ever0.github.io/Gemini?q=/tests/test_audio_embedder.py</loc>
+  <lastmod>2023-12-28T09:21:02+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+
+<url>
+  <loc>https://james4ever0.github.io/Gemini?q=/tests/test_gemini.py</loc>
+  <lastmod>2023-12-28T09:21:02+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+
+<url>
+  <loc>https://james4ever0.github.io/Gemini?q=/tests/test_img_encoder.py</loc>
+  <lastmod>2023-12-28T09:21:02+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+
+<url>
+  <loc>https://james4ever0.github.io/Gemini?q=/tests/test_img_to_transformer.py</loc>
+  <lastmod>2023-12-28T09:21:02+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+
+<url>
+  <loc>https://james4ever0.github.io/Gemini?q=/tests/test_tokenizer.py</loc>
+  <lastmod>2023-12-28T09:21:02+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+
+</urlset>
