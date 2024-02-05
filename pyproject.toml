@@ -23,7 +23,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-zetascale = "2.0.0"
+zetascale = "2.0.7"
 torch = "*"
 einops = "*"
 torchvision = "*"
