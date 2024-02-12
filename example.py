@@ -28,8 +28,11 @@ img = torch.randn(1, 3, 64, 64)  # Reduced height and width from 128
 # Audio shape: [batch, audio_seq_len, dim]
 audio = torch.randn(1, 32)  # Reduced audio_seq_len from 64
 
+# Video: [B, T, C, H, W]
+video = torch.randn(1, 64, 3, 64, 64)
+
 # Apply model to text and img
-y, _ = model(text=text, img=img, audio=audio)
+y, _ = model(text=text, img=img, audio=audio, video=video)
 
 # Output shape: [batch, seq_len, dim]
 print(y)

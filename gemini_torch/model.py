@@ -4,7 +4,11 @@ from torch.nn import Module
 from zeta.structs import AutoregressiveWrapper
 
 from gemini_torch.transformer import Decoder, Transformer
-from einops import rearrange, reduce
+from zeta.nn import (
+    audio_to_text,
+    video_to_text,
+    img_to_text,
+)
 
 
 def exists(val):
@@ -117,6 +121,7 @@ class Gemini(Module):
         text: torch.Tensor = None,
         img: torch.Tensor = None,
         audio: torch.Tensor = None,
+        video: torch.Tensor = None,
         *args,
         **kwargs,
     ):
@@ -126,6 +131,8 @@ class Gemini(Module):
         Args:
         - text: Text tensor
         - img: Image tensor
+        - audio: Audio tensor
+        - video: Video tensor
 
         Returns:
         - torch.Tensor: The output of the model
@@ -133,59 +140,51 @@ class Gemini(Module):
         Text input shape: [batch, seq_len, dim]
         img input shape: [batch, channels, height, width]
         audio input shape: [batch, audio_seq_len]
+        video input shape: [batch, channels, frames, height, width]
 
         Output shape: [batch, seq_len, dim]
-
-
         """
-        # print(f"Text: {text.shape} and text dtype: {text.dtype}")
+        assert (
+            (img is not None and audio is not None)
+            or (img is not None and video is not None)
+            or (audio is not None and video is not None)
+        ), "At least two of the inputs (img, audio, video) must be provided."
 
-        # Audio dimensions
-        img_b, img_c, img_h, img_w = img.shape
+        if img is not None:
+            # Image dimensions
+            img_b, img_c, img_h, img_w = img.shape
 
-        img_to_text = reduce(img, "b c h w -> b c (h w)", "mean")
-        img_proj = nn.Linear(img_h * img_w, self.dim)
-        img = img_proj(img_to_text)
-        # Reshape to apply the linear on the last dimension c to make it compatible
-        img = rearrange(img, "b c d -> b d c")
-        two_proj = nn.Linear(img_c, self.max_seq_len)
-        img = two_proj(img)
-        img = rearrange(img, "b d c -> b c d")
+            # img = img_to_text(img, self.patches, self.patch_size, self.dim, True)
+            img = img_to_text(img, self.max_seq_len, self.dim, True)
 
-        if self.post_modal_transform_norm:
-            img = self.pmt_norm(img)
+            if self.post_modal_transform_norm:
+                img = self.pmt_norm(img)
 
-        ########## Audio ##########
-        # Audio transformations to add a 3rd dimension
-        audio_3d = rearrange(audio, "b l -> b l 1")
-        # print(f"Audio 3d: {audio_3d.shape}")
+        if audio is not None:
+            # Audio dimensions
+            audio_b, audio_seq_len = audio.shape
 
-        # Audio dimensions
-        audio_b, audio_seq_len, audio_dim = audio_3d.shape
+            audio = audio_to_text(audio, self.max_seq_len, self.dim, True)
 
-        # Audio proj last dimension
-        audio_proj = nn.Linear(audio_dim, self.dim)
-        audio = audio_proj(audio_3d)
-        # print(f"Audio proj shape: {audio.shape}")
+            if self.post_modal_transform_norm:
+                audio = self.pmt_norm(audio)
 
-        # Audio reshape seqlen
-        audio = rearrange(audio, "b l d -> b d l")
-        audio_proj2 = nn.Linear(audio_seq_len, self.max_seq_len)
-        audio = audio_proj2(audio)
-        audio = rearrange(audio, "b d l -> b l d")
-        # print(f"Audio final shape: {audio.shape}")
+        if video is not None:
+            # Video dimensions
+            video_b, video_c, video_f, video_h, video_w = video.shape
 
-        if self.post_modal_transform_norm:
-            audio = self.pmt_norm(audio)
+            video = video_to_text(video, self.max_seq_len, self.dim, True)
 
         # Fuse layers
-        fused = torch.cat((img, audio), dim=1)
+        if img is not None and audio is not None:
+            fused = torch.cat((img, audio), dim=1)
+        elif img is not None and video is not None:
+            fused = torch.cat((img, video), dim=1)
+        elif audio is not None and video is not None:
+            fused = torch.cat((audio, video), dim=1)
 
         # Post fusion layernorm for stability.
         if self.post_fusion_norm:
             fused = self.psf_norm(fused)
 
-        # audio
-        # print(img_to_text.shape)
-        # fused = torch.concat((img, audio))
         return self.decoder(text, context=fused, *args, **kwargs)
