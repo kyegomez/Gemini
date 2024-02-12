@@ -156,13 +156,13 @@ print("Decoded audio:", decoded_audio)
 - [ ] [Check out the project board for more todos](https://github.com/users/kyegomez/projects/11/views/1)
 
 
-- [ ] Implement the img feature embedder and align imgs with text and pass into transformer: ```Gemini models are trained to accommodate textual input interleaved with a wide variety of audio and visual inputs, such as natural images, charts, screenshots, PDFs, and videos, and they can produce
+- [x] Implement the img feature embedder and align imgs with text and pass into transformer: ```Gemini models are trained to accommodate textual input interleaved with a wide variety of audio and visual inputs, such as natural images, charts, screenshots, PDFs, and videos, and they can produce
 text and image outputs (see Figure 2). The visual encoding of Gemini models is inspired by our own
 foundational work on Flamingo (Alayrac et al., 2022), CoCa (Yu et al., 2022a), and PaLI (Chen et al.,
 2022), with the important distinction that the models are multimodal from the beginning and can
 natively output images using discrete image tokens (Ramesh et al., 2021; Yu et al., 2022b).```
 
-- [ ] Implement the audio processing using USM by Google:```In addition, Gemini can directly ingest audio signals at
+- [x] Implement the audio processing using USM by Google:```In addition, Gemini can directly ingest audio signals at
 16kHz from Universal Speech Model (USM) (Zhang et al., 2023) features. This enables the model to
 capture nuances that are typically lost when the audio is naively mapped to a text input (for example,
 see audio understanding demo on the website).```
