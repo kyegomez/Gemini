@@ -12,7 +12,7 @@ def exists(val):
     return val is not None
 
 
-class Gemini15TransformerBlock(nn.Module):
+class LongGeminiTransformerBlock(nn.Module):
     """
     Gemini15TransformerBlock is a transformer block used in the Gemini15 model.
 
