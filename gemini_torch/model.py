@@ -2,7 +2,7 @@ import torch
 from ring_attention_pytorch import RingAttention
 from torch import Tensor, nn
 from torch.nn import Module
-from zeta.nn import FeedForward, audio_to_text, img_to_text, video_to_text
+from zeta.nn import FeedForward, audio_to_text, img_to_text, video_to_text, OutputHead
 from zeta.structs import AutoregressiveWrapper
 
 from gemini_torch.transformer import Decoder, Transformer
@@ -94,8 +94,7 @@ class LongGeminiTransformerBlock(nn.Module):
             Tensor: The output tensor.
 
         """
-        # if self.qk_norm:
-        #     q, k, v = self.norm(x), self.norm(x), self.norm(x)
+        x = self.norm(x)
 
         # Attention
         x = self.attn(x)
@@ -104,6 +103,98 @@ class LongGeminiTransformerBlock(nn.Module):
         x = self.ffn(x) + x
 
         return x
+
+
+class LongGemini(nn.Module):
+    """
+    LongGemini model implementation.
+
+    Args:
+        dim (int): Dimension of the input.
+        depth (int, optional): Depth of the model. Defaults to 32.
+        dim_head (int, optional): Dimension of each head. Defaults to 128.
+        long_gemini_depth (int, optional): Depth of the LongGemini model. Defaults to 9.
+        heads (int, optional): Number of attention heads. Defaults to 24.
+        qk_norm (bool, optional): Whether to apply normalization to query and key. Defaults to True.
+        ff_mult (int, optional): Multiplier for the feed-forward layer dimension. Defaults to 4.
+        ring_seq_size (int, optional): Size of the ring sequence. Defaults to 512.
+        *args: Variable length argument list.
+        **kwargs: Arbitrary keyword arguments.
+    """
+
+    def __init__(
+        self,
+        dim: int,
+        depth: int = 32,
+        num_tokens: int = 10000,
+        seq_len: int = 8192,
+        dim_head: int = 128,
+        long_gemini_depth: int = 9,
+        heads: int = 24,
+        qk_norm: bool = True,
+        ff_mult: int = 4,
+        ring_seq_size: int = 512,
+        *args,
+        **kwargs,
+    ):
+        super(LongGemini, self).__init__()
+        self.dim = dim
+        self.depth = depth
+        self.num_tokens = num_tokens
+        self.seq_len = seq_len
+        self.dim_head = dim_head
+        self.long_gemini_depth = long_gemini_depth
+        self.heads = heads
+        self.qk_norm = qk_norm
+        self.ff_mult = ff_mult
+        self.ring_seq_size = ring_seq_size
+
+        self.output_head = OutputHead(
+            dim,
+            1,
+        )
+
+        # Layers for the model
+        self.layers = nn.ModuleList(
+            [
+                LongGeminiTransformerBlock(
+                    dim,
+                    depth,
+                    dim_head,
+                    heads,
+                    qk_norm,
+                    ff_mult,
+                    ring_seq_size,
+                    *args,
+                    **kwargs,
+                )
+                for _ in range(long_gemini_depth)
+            ]
+        )
+
+        # Embedding layer for the model
+        self.embed = nn.Embedding(num_tokens, dim)
+
+    def forward(self, x: Tensor, *args, **kwargs):
+        """
+        Forward pass of the LongGemini model.
+
+        Args:
+            x (Tensor): Input tensor.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            Tensor: Output tensor.
+        """
+        # Text embedding
+        x = self.embed(x)
+
+        # Apply the layers
+        for layer in self.layers:
+            x = layer(x)
+
+        return self.output_head(x)
 
 
 class Gemini(Module):
