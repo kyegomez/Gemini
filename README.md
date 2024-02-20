@@ -28,6 +28,7 @@ The input sequences for Gemini consist of texts, audio, images, and videos. Thes
 
 ```python
 import torch
+
 from gemini_torch.model import Gemini
 
 # Initialize model with smaller dimensions
@@ -50,12 +51,12 @@ model = Gemini(
 text = torch.randint(0, 50432, (1, 4096))  # Reduced seq_len from 8192
 
 # Apply model to text
-y = model(text,)
+y = model(
+    text,
+)
 
 # Output shape: [batch, seq_len, dim]
 print(y)
-
-
 ```
 --------
 
@@ -66,6 +67,7 @@ print(y)
 
 ```python
 import torch
+
 from gemini_torch.model import Gemini
 
 # Initialize model with smaller dimensions
@@ -109,7 +111,6 @@ model.eval()
 text = tokenize(texts)
 logits = model(text)
 text = detokenize(logits)
-
 ```
 ------
 
@@ -133,8 +134,6 @@ decoded_audio = tokenizer.decode(encoded_audio)
 
 print("Encoded audio:", encoded_audio)
 print("Decoded audio:", decoded_audio)
-
-
 ```
 
 

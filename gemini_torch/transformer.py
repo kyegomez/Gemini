@@ -143,12 +143,12 @@ def init_zero_(layer):
 
 
 def pick_and_pop(keys, d):
-    values = list(map(lambda key: d.pop(key), keys))
+    values = list(map(d.pop, keys))
     return dict(zip(keys, values))
 
 
 def group_dict_by_key(cond, d):
-    return_val = [dict(), dict()]
+    return_val = [{}, {}]
     for key in d.keys():
         match = bool(cond(key))
         ind = int(not match)

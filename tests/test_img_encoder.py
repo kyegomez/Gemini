@@ -1,5 +1,7 @@
-import torch
 import unittest
+
+import torch
+
 from gemini_torch.utils import ImageToTextEmbeddings
 
 

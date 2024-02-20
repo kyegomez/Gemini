@@ -1,11 +1,11 @@
 import torch
-from torch import nn, Tensor
+from ring_attention_pytorch import RingAttention
+from torch import Tensor, nn
 from torch.nn import Module
+from zeta.nn import FeedForward, audio_to_text, img_to_text, video_to_text
 from zeta.structs import AutoregressiveWrapper
 
 from gemini_torch.transformer import Decoder, Transformer
-from zeta.nn import audio_to_text, video_to_text, img_to_text, FeedForward
-from ring_attention_pytorch import RingAttention
 
 
 def exists(val):

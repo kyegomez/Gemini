@@ -1,10 +1,9 @@
 import os
-import requests
 from logging import getLogger
 from typing import List, Optional
 
+import requests
 from sentencepiece import SentencePieceProcessor
-
 
 logger = getLogger()
 

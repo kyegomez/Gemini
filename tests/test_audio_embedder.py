@@ -1,5 +1,6 @@
-import torch
 import pytest
+import torch
+
 from gemini_torch.utils import AudioToEmbeddings
 
 

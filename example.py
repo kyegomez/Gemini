@@ -1,4 +1,5 @@
 import torch
+
 from gemini_torch.model import Gemini
 
 # Initialize model with smaller dimensions
