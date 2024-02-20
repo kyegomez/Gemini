@@ -1,45 +1,136 @@
 import torch
-from torch import nn
+from torch import nn, Tensor
 from torch.nn import Module
 from zeta.structs import AutoregressiveWrapper
 
 from gemini_torch.transformer import Decoder, Transformer
-from zeta.nn import (
-    audio_to_text,
-    video_to_text,
-    img_to_text,
-)
+from zeta.nn import audio_to_text, video_to_text, img_to_text, FeedForward
+from ring_attention_pytorch import RingAttention
 
 
 def exists(val):
     return val is not None
 
 
-class Gemini(Module):
+class Gemini15TransformerBlock(nn.Module):
     """
-    Gemini model class.
-
+    Gemini15TransformerBlock is a transformer block used in the Gemini15 model.
 
     Args:
-    - num_tokens: Number of tokens in the vocabulary
-    - max_seq_len: Maximum sequence length
-    - dim: Dimension of the model
-    - depth: Depth of the model
-    - dim_head: Dimension of the model head
-    - heads: Number of heads
-    - use_abs_pos_emb: Whether to use absolute position embedding
-    - alibi_pos_bias: Alibi position bias
-    - alibi_num_heads: Number of alibi heads
-    - rotary_xpos: Rotary position
-    - attn_flash: Attention flash
-    - deepnorm: Deep normalization
-    - shift_tokens: Number of tokens to shift
-    - attn_one_kv_head: Attention one key/value head
-    - qk_norm: Query-key normalization
-    - attn_qk_norm: Attention query-key normalization
-    - attn_qk_norm_dim_scale: Attention query-key normalization dimension scale
-    - embedding_provider: Embedding provider module
+        dim (int): The input dimension of the block.
+        depth (int, optional): The depth of the block. Defaults to 32.
+        dim_head (int, optional): The dimension of each head in the multi-head attention mechanism. Defaults to 128.
+        heads (int, optional): The number of attention heads. Defaults to 24.
+        use_abs_pos_emb (bool, optional): Whether to use absolute positional embeddings. Defaults to False.
+        attn_flash (bool, optional): Whether to use flash attention. Defaults to True.
+        attn_kv_heads (int, optional): The number of heads to use for key-value attention. Defaults to 2.
+        qk_norm (bool, optional): Whether to apply layer normalization to query, key, and value. Defaults to True.
+        ff_mult (int, optional): The multiplier for the hidden dimension in the feedforward network. Defaults to 4.
 
+    Attributes:
+        dim (int): The input dimension of the block.
+        depth (int): The depth of the block.
+        dim_head (int): The dimension of each head in the multi-head attention mechanism.
+        heads (int): The number of attention heads.
+        use_abs_pos_emb (bool): Whether to use absolute positional embeddings.
+        attn_flash (bool): Whether to use flash attention.
+        attn_kv_heads (int): The number of heads to use for key-value attention.
+        qk_norm (bool): Whether to apply layer normalization to query, key, and value.
+        attn (RingAttention): The attention model for the block.
+        norm (nn.LayerNorm): The layer normalization module.
+        ffn (FeedForward): The feedforward model for the block.
+
+    """
+
+    def __init__(
+        self,
+        dim: int,
+        depth: int = 32,
+        dim_head: int = 128,
+        heads: int = 24,
+        qk_norm: bool = True,
+        ff_mult: int = 4,
+        ring_seq_size: int = 512,
+        *args,
+        **kwargs,
+    ):
+        super().__init__()
+        self.dim = dim
+        self.depth = depth
+        self.dim_head = dim_head
+        self.heads = heads
+        self.qk_norm = qk_norm
+        self.ff_mult = ff_mult
+        self.ring_seq_size = ring_seq_size
+
+        # Attention model for the block
+        self.attn = RingAttention(
+            dim=dim,
+            dim_head=dim_head,
+            heads=True,
+            causal=True,
+            auto_shard_seq=True,
+            ring_attn=True,
+            ring_seq_size=ring_seq_size,
+            prenorm=True,
+            *args,
+            **kwargs,
+        )
+
+        # Post Attention layer normalization
+        self.norm = nn.LayerNorm(dim)
+
+        # Feedforward model for the block
+        self.ffn = FeedForward(dim, dim, ff_mult, *args, **kwargs)
+
+    def forward(self, x: Tensor, *args, **kwargs):
+        """
+        Forward pass of the Gemini15TransformerBlock.
+
+        Args:
+            x (Tensor): The input tensor.
+
+        Returns:
+            Tensor: The output tensor.
+
+        """
+        # if self.qk_norm:
+        #     q, k, v = self.norm(x), self.norm(x), self.norm(x)
+
+        # Attention
+        x = self.attn(x)
+
+        # Feedforward
+        x = self.ffn(x) + x
+
+        return x
+
+
+class Gemini(Module):
+    """
+    Gemini model implementation.
+
+    Args:
+    - num_tokens: Number of tokens in the input vocabulary (default: 50432)
+    - max_seq_len: Maximum sequence length (default: 32052)
+    - dim: Model dimension (default: 2560)
+    - depth: Number of transformer layers (default: 32)
+    - dim_head: Dimension of each attention head (default: 128)
+    - heads: Number of attention heads (default: 24)
+    - use_abs_pos_emb: Whether to use absolute positional embeddings (default: False)
+    - attn_flash: Whether to use flash attention (default: True)
+    - attn_kv_heads: Number of heads for key-value attention (default: 2)
+    - qk_norm: Whether to apply layer normalization to query-key attention (default: True)
+    - attn_qk_norm: Whether to apply layer normalization to query-key attention (default: True)
+    - attn_qk_norm_dim_scale: Whether to scale the dimension of query-key attention layer normalization (default: True)
+    - patches: Number of patches for image input (default: 16)
+    - patch_size: Size of each patch for image input (default: 16)
+    - img_channels: Number of channels in the image input (default: 3)
+    - audio_seq_len: Length of audio sequence input (default: 128)
+    - post_fusion_norm: Whether to apply layer normalization after fusion (default: True)
+    - post_modal_transform_norm: Whether to apply layer normalization after modal transformation (default: False)
+    - *args: Additional positional arguments
+    - **kwargs: Additional keyword arguments
     """
 
     def __init__(
@@ -126,13 +217,15 @@ class Gemini(Module):
         **kwargs,
     ):
         """
-        Forward pass of the model.
+        Forward pass of the Gemini model.
 
         Args:
         - text: Text tensor
         - img: Image tensor
         - audio: Audio tensor
         - video: Video tensor
+        - *args: Additional positional arguments
+        - **kwargs: Additional keyword arguments
 
         Returns:
         - torch.Tensor: The output of the model

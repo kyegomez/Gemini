@@ -3,3 +3,4 @@ torch
 einops
 pytest
 sentencepiece
+ring-attention-pytorch

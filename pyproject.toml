@@ -29,12 +29,7 @@ einops = "*"
 torchvision = "*"
 sentencepiece = "*"
 pytest = "*"
-
-
-
-[tool.poetry.dev-dependencies]
-# Add development dependencies here
-
+ring-attention-pytorch = "*"
 
 [tool.poetry.group.lint.dependencies]
 ruff = ">=0.1.6,<0.3.0"
