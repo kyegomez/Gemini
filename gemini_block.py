@@ -1,6 +1,6 @@
 import torch
 
-from gemini_torch.model import LongGeminiTransformerBlock
+from gemini_torch import LongGeminiTransformerBlock
 
 # Define input tensor
 x = torch.randn(1, 1024, 512)

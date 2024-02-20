@@ -1,5 +1,5 @@
 import torch
-from gemini_torch.model import LongGemini
+from gemini_torch import LongGemini
 
 # Text tokens
 x = torch.randint(0, 10000, (1, 1024))
