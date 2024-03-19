@@ -1,0 +1,154 @@
+{
+    "200": {
+        "file_id": 11,
+        "content": "        self.assertIsInstance(output, torch.Tensor)\n        self.assertEqual(output.shape, (1, 128, 128))\n    def test_forward_with_img_2048(self):\n        img = torch.randn(1, 3, 2048, 2048)\n        output = self.model(img)\n        self.assertIsInstance(output, torch.Tensor)\n        self.assertEqual(output.shape, (1, 128, 128))\nif __name__ == \"__main__\":\n    unittest.main()",
+        "type": "code",
+        "location": "/tests/test_img_encoder.py:35-46"
+    },
+    "201": {
+        "file_id": 11,
+        "content": "This code snippet is testing the forward pass of a model with different image sizes. It ensures that the output tensor shape is (1, 128, 128) after passing an input image of size (3, 2048, 2048). The model's forward method is being tested in this context.",
+        "type": "comment"
+    },
+    "202": {
+        "file_id": 12,
+        "content": "/tests/test_img_to_transformer.py",
+        "type": "filepath"
+    },
+    "203": {
+        "file_id": 12,
+        "content": "This code demonstrates the usage of ImageToTextEmbeddings in Gemini_torch. It initializes an image-to-text model with specified parameters and performs a forward pass on a dummy image input to output a sequence space embedding with reduced dimension, expected shape [1, 50000, 256].",
+        "type": "summary"
+    },
+    "204": {
+        "file_id": 12,
+        "content": "import torch\nfrom gemini_torch.utils import ImageToTextEmbeddings\n# Example usage\nnum_patches = 16\npatch_size = 16\ntransformer_dim = 512\nimg_channels = 3\nseq_len = 50000\nreduced_dim = 256  # Reduced dimension after dimensionality reduction\nmodel = ImageToTextEmbeddings(\n    num_patches, patch_size, transformer_dim, img_channels, seq_len, reduced_dim\n)\n# Dummy image input [BATCH, CHANNELS, HEIGHT, WIDTH]\ndummy_img = torch.randn(1, 3, 64, 64)  # Batch size of 1, 64x64 RGB image\n# Forward pass\nseq_space_output = model(dummy_img)\nprint(seq_space_output.shape)  # Expected shape: [1, 50000, 256]",
+        "type": "code",
+        "location": "/tests/test_img_to_transformer.py:1-21"
+    },
+    "205": {
+        "file_id": 12,
+        "content": "This code demonstrates the usage of ImageToTextEmbeddings in Gemini_torch. It initializes an image-to-text model with specified parameters and performs a forward pass on a dummy image input to output a sequence space embedding with reduced dimension, expected shape [1, 50000, 256].",
+        "type": "comment"
+    },
+    "206": {
+        "file_id": 13,
+        "content": "/tests/test_tokenizer.py",
+        "type": "filepath"
+    },
+    "207": {
+        "file_id": 13,
+        "content": "The code tests the `MultimodalSentencePieceTokenizer` class, verifying encoding and decoding functions, error handling, consistency with T5Tokenizer, attribute types, and adds tests for special characters, pickleability, and model preservation.",
+        "type": "summary"
+    },
+    "208": {
+        "file_id": 13,
+        "content": "import unittest\nimport pytest\nfrom gemini_torch.tokenizer import (\n    MultimodalSentencePieceTokenizer,\n    SentencePieceProcessor,\n)\n# Fixture for tokenizer initialization\n@pytest.fixture\ndef tokenizer():\n    return MultimodalSentencePieceTokenizer()\n# Test decoding of various token sequences\n@pytest.mark.parametrize(\n    \"tokens, expected\",\n    [\n        ([1, 2, 3], \"abc\"),  # Replace with actual expected output\n        ([4, 5, 6], \"def\"),  # Replace with actual expected output\n        ([7, 8, 9], \"ghi\"),  # Replace with actual expected output\n        # Add more test cases as needed\n    ],\n)\ndef test_decode(tokens, expected, tokenizer):\n    assert tokenizer.decode(tokens) == expected\n# Test decoding of sequences with modality tokens\n@pytest.mark.parametrize(\n    \"tokens, expected\",\n    [\n        ([1, 2, 3, 100, 101], \"abc\"),  # Assuming 100 and 101 are modality tokens\n        ([4, 5, 6, 102, 103], \"def\"),  # Assuming 102 and 103 are modality tokens\n        ([7, 8, 9, 104, 105], \"ghi\"),  # Assuming 104 and 105 are modality tokens",
+        "type": "code",
+        "location": "/tests/test_tokenizer.py:1-37"
+    },
+    "209": {
+        "file_id": 13,
+        "content": "The code defines a `MultimodalSentencePieceTokenizer` and tests its `decode` function for both regular token sequences and sequences with modality tokens. The fixture initializes the tokenizer, while `test_decode` uses parametrized input to compare the expected output against the actual output from the tokenizer's decoding process.",
+        "type": "comment"
+    },
+    "210": {
+        "file_id": 13,
+        "content": "        # Add more test cases as needed\n    ],\n)\ndef test_decode_with_modality_tokens(tokens, expected, tokenizer):\n    assert tokenizer.decode(tokens) == expected\n# Test decoding of empty sequence\ndef test_decode_empty_sequence(tokenizer):\n    assert tokenizer.decode([]) == \"\"\n# Test decoding of sequence with invalid tokens\ndef test_decode_invalid_tokens(tokenizer):\n    with pytest.raises(Exception):  # Replace with the specific expected exception\n        tokenizer.decode([999999])  # Assuming 999999 is an invalid token\n# Test encoding of various inputs\n@pytest.mark.parametrize(\n    \"input, expected\",\n    [\n        (\"abc\", [1, 2, 3]),  # Replace with actual expected output\n        (\"def\", [4, 5, 6]),  # Replace with actual expected output\n        (\"ghi\", [7, 8, 9]),  # Replace with actual expected output\n        # Add more test cases as needed\n    ],\n)\ndef test_encode(input, expected, tokenizer):\n    assert tokenizer.encode(input) == expected\n# Test encoding of empty string\ndef test_encode_empty_string(tokenizer):",
+        "type": "code",
+        "location": "/tests/test_tokenizer.py:38-71"
+    },
+    "211": {
+        "file_id": 13,
+        "content": "This code defines various test functions for a tokenizer class, including tests for decoding with modality tokens, empty sequence, invalid tokens, encoding different inputs, and encoding an empty string. The tokenizer is expected to correctly decode and encode the given input sequences while handling edge cases such as empty sequences and invalid tokens.",
+        "type": "comment"
+    },
+    "212": {
+        "file_id": 13,
+        "content": "    assert tokenizer.encode(\"\") == []\n# Test encoding of string with special characters\n@pytest.mark.parametrize(\n    \"input, expected\",\n    [\n        (\"abc!\", [1, 2, 3, 100]),  # Assuming 100 is the token for \"!\"\n        (\"def?\", [4, 5, 6, 101]),  # Assuming 101 is the token for \"?\"\n        (\"ghi#\", [7, 8, 9, 102]),  # Assuming 102 is the token for \"#\"\n        # Add more test cases as needed\n    ],\n)\ndef test_encode_special_characters(input, expected, tokenizer):\n    assert tokenizer.encode(input) == expected\n# Test encoding of string of different lengths\n@pytest.mark.parametrize(\n    \"input, expected\",\n    [\n        (\"a\", [1]),  # Replace with actual expected output\n        (\"ab\", [1, 2]),  # Replace with actual expected output\n        (\"abc\", [1, 2, 3]),  # Replace with actual expected output\n        (\"abcd\", [1, 2, 3, 4]),  # Replace with actual expected output\n        (\"abcde\", [1, 2, 3, 4, 5]),  # Replace with actual expected output\n        # Add more test cases as needed\n    ],\n)\ndef test_encode_different_lengths(input, expected, tokenizer):",
+        "type": "code",
+        "location": "/tests/test_tokenizer.py:72-101"
+    },
+    "213": {
+        "file_id": 13,
+        "content": "This code tests the encoding functionality of a tokenizer by providing various input strings containing special characters and strings of different lengths. The test_encode_special_characters function checks if the encoded output for strings with special characters matches the expected output, assuming specific tokens for those characters. The test_encode_different_lengths function verifies if the encoding correctly handles strings of different lengths.",
+        "type": "comment"
+    },
+    "214": {
+        "file_id": 13,
+        "content": "    assert tokenizer.encode(input) == expected\nclass TestMultimodalSentencePieceTokenizer(unittest.TestCase):\n    def setUp(self):\n        self.tokenizer = MultimodalSentencePieceTokenizer(\n            tokenizer_name=\"hf-internal-testing/llama-tokenizer\"\n        )\n    # Tests for initialization\n    def test_init_with_model_path(self):\n        model_path = \"path/to/tokenizer.model\"\n        tokenizer = MultimodalSentencePieceTokenizer(model_path=model_path)\n        self.assertIsInstance(tokenizer.sp_model, SentencePieceProcessor)\n    def test_init_with_tokenizer_name(self):\n        tokenizer_name = \"hf-internal-testing/llama-tokenizer\"\n        tokenizer = MultimodalSentencePieceTokenizer(tokenizer_name=tokenizer_name)\n        self.assertIsInstance(tokenizer.sp_model, SentencePieceProcessor)\n    def test_init_raises_error_without_model_or_name(self):\n        with self.assertRaises(ValueError):\n            MultimodalSentencePieceTokenizer()\n    # Tests for model download\n    def test_download_tokenizer(self):",
+        "type": "code",
+        "location": "/tests/test_tokenizer.py:102-127"
+    },
+    "215": {
+        "file_id": 13,
+        "content": "This code defines a test suite for the `MultimodalSentencePieceTokenizer` class, which initializes a tokenizer using either a model path or tokenizer name. The tests ensure that initialization with a model path or tokenizer name returns an instance of `SentencePieceProcessor`. Additionally, it checks that no error is raised when initializing without specifying a model or name.",
+        "type": "comment"
+    },
+    "216": {
+        "file_id": 13,
+        "content": "        model_path = \"data/tokenizer.model\"\n        downloaded_model_path = MultimodalSentencePieceTokenizer.download_tokenizer(\n            \"hf-internal-testing/llama-tokenizer\"\n        )\n        self.assertEqual(model_path, downloaded_model_path)\n    # Tests for encode\n    def test_encode_with_text(self):\n        encoded_text = self.tokenizer.encode(\"This is text.\")\n        self.assertIsInstance(encoded_text, list)\n        self.assertEqual(len(encoded_text), 6)  # Assuming 6 tokens in the encoded text\n    def test_encode_with_audio(self):\n        encoded_audio = self.tokenizer.encode(\"Audio description\", modality=\"audio\")\n        self.assertIsInstance(encoded_audio, list)\n        self.assertIn(\n            self.tokenizer.modality_tokens[\"audio\"][0], encoded_audio\n        )  # Checking for modality start token\n        self.assertIn(\n            self.tokenizer.modality_tokens[\"audio\"][1], encoded_audio\n        )  # Checking for modality end token\n    def test_encode_with_image(self):\n        encoded_image = self.tokenizer.encode(\"Image description\", modality=\"image\")",
+        "type": "code",
+        "location": "/tests/test_tokenizer.py:128-151"
+    },
+    "217": {
+        "file_id": 13,
+        "content": "This code is testing the functionality of a tokenizer by performing different operations. It first checks if the model path matches after downloading it from the specified source. Then, it tests encoding text and audio descriptions to ensure the output is a list and includes the correct number of tokens. Lastly, it verifies that when encoding an image description, the resulting encoded list contains the expected modality start and end tokens.",
+        "type": "comment"
+    },
+    "218": {
+        "file_id": 13,
+        "content": "        self.assertIsInstance(encoded_image, list)\n        self.assertIn(\n            self.tokenizer.modality_tokens[\"image\"][0], encoded_image\n        )  # Checking for modality start token\n        self.assertIn(\n            self.tokenizer.modality_tokens[\"image\"][1], encoded_image\n        )  # Checking for modality end token\n    def test_encode_with_bos_and_eos(self):\n        encoded_text = self.tokenizer.encode(\"This is text.\", bos=True, eos=True)\n        self.assertEqual(encoded_text[0], self.tokenizer.bos_id)  # Checking BOS token\n        self.assertEqual(encoded_text[-1], self.tokenizer.eos_id)  # Checking EOS token\n    def test_encode_with_custom_bos_and_eos(self):\n        custom_bos_id = 100\n        custom_eos_id = 200\n        encoded_text = self.tokenizer.encode(\n            \"This is text.\", bos=custom_bos_id, eos=custom_eos_id\n        )\n        self.assertEqual(encoded_text[0], custom_bos_id)  # Checking custom BOS token\n        self.assertEqual(encoded_text[-1], custom_eos_id)  # Checking custom EOS token",
+        "type": "code",
+        "location": "/tests/test_tokenizer.py:152-172"
+    },
+    "219": {
+        "file_id": 13,
+        "content": "The code in the given range tests the tokenizer's encoding capabilities. It checks if the encoded image contains the modality start and end tokens, as well as verifying the presence of BOS (beginning of sequence) and EOS (end of sequence) tokens in the encoded text. The test also confirms that custom BOS and EOS tokens can be used when encoding.",
+        "type": "comment"
+    },
+    "220": {
+        "file_id": 13,
+        "content": "    # Tests for decode\n    def test_decode_text(self):\n        encoded_text = self.tokenizer.encode(\"This is text.\")\n        decoded_text = self.tokenizer.decode(encoded_text)\n        self.assertEqual(decoded_text, \"This is text.\")\n    def test_decode_audio(self):\n        encoded_audio = self.tokenizer.encode(\"Audio description\", modality=\"audio\")\n        decoded_audio = self.tokenizer.decode(encoded_audio)\n        self.assertEqual(decoded_audio, \"Audio description\")  # Ignoring modality tokens\n        # Tests for decode with different tokens\n    def test_decode_with_unknown_tokens(self):\n        encoded_text = self.tokenizer.encode(\"This is text. \")\n        decoded_text = self.tokenizer.decode(encoded_text)\n        self.assertEqual(\n            decoded_text, \"This is text. \"\n        )  # Unknown token remains unchanged\n    # Tests for exception handling\n    def test_encode_raises_error_with_invalid_modality(self):\n        with self.assertRaises(ValueError):\n            self.tokenizer.encode(\"Text description\", modality=\"invalid_modality\")",
+        "type": "code",
+        "location": "/tests/test_tokenizer.py:174-197"
+    },
+    "221": {
+        "file_id": 13,
+        "content": "This code tests the tokenizer's decode function, including handling unknown tokens and exception handling. It verifies that the decoded text or audio remains unchanged with unknown tokens and raises a ValueError when encountering an invalid modality during encoding.",
+        "type": "comment"
+    },
+    "222": {
+        "file_id": 13,
+        "content": "    # Tests for integration with other libraries\n    def test_encode_decodes_with_transformers_tokenizer(self):\n        from transformers import T5Tokenizer\n        t5_tokenizer = T5Tokenizer.from_pretrained(\"t5-small\")\n        encoded_text_t5 = t5_tokenizer.encode(\"This is text.\")\n        encoded_text_sp = self.tokenizer.encode(\"This is text.\")\n        decoded_text_t5 = t5_tokenizer.decode(encoded_text_sp)\n        self.assertEqual(\n            encoded_text_sp, encoded_text_t5\n        )  # Encoding should be consistent\n        self.assertEqual(\n            decoded_text_t5, \"This is text.\"\n        )  # Decoding should be consistent\n    # Tests for coverage\n    def test_model_attributes(self):\n        self.assertIsInstance(self.tokenizer.sp_model, SentencePieceProcessor)\n        self.assertIsInstance(self.tokenizer.n_words, int)\n        self.assertIsInstance(self.tokenizer.bos_id, int)\n        self.assertIsInstance(self.tokenizer.eos_id, int)\n        self.assertIsInstance(self.tokenizer.pad_id, int)\n        self.assertIsInstance(self.tokenizer.modality_tokens, dict)",
+        "type": "code",
+        "location": "/tests/test_tokenizer.py:199-221"
+    },
+    "223": {
+        "file_id": 13,
+        "content": "The code performs two tests: one for encoding consistency between the custom tokenizer and the T5Tokenizer from the transformers library, and another for checking if the model attributes of the custom tokenizer are instance-correct types.",
+        "type": "comment"
+    },
+    "224": {
+        "file_id": 13,
+        "content": "    # Additional tests\n    def test_encode_decodes_with_different_lengths(self):\n        encoded_text_long = self.tokenizer.encode(\"This is a long text.\")\n        encoded_text_short = self.tokenizer.encode(\"This is short.\")\n        decoded_text_long = self.tokenizer.decode(encoded_text_long)\n        decoded_text_short = self.tokenizer.decode(encoded_text_short)\n        self.assertEqual(\n            len(encoded_text_long), len(encoded_text_short)\n        )  # Output length independent of input length\n        self.assertEqual(decoded_text_long, \"This is a long text.\")\n        self.assertEqual(decoded_text_short, \"This is short.\")\n    def test_encode_decodes_with_special_characters(self):\n        text_with_special_chars = \"This text has #@! special characters.\"\n        encoded_text = self.tokenizer.encode(text_with_special_chars)\n        decoded_text = self.tokenizer.decode(encoded_text)\n        self.assertEqual(decoded_text, text_with_special_chars)\n    def test_tokenizer_is_pickleable(self):\n        import pickle",
+        "type": "code",
+        "location": "/tests/test_tokenizer.py:223-242"
+    },
+    "225": {
+        "file_id": 13,
+        "content": "The code includes additional tests to verify the functionality of the tokenizer. The first test checks if the encoded text length is independent of input length. The second test verifies encoding and decoding with special characters. The third test confirms that the tokenizer is pickleable.",
+        "type": "comment"
+    },
+    "226": {
+        "file_id": 13,
+        "content": "        pickled_tokenizer = pickle.dumps(self.tokenizer)\n        unpickled_tokenizer = pickle.loads(pickled_tokenizer)\n        self.assertEqual(self.tokenizer.sp_model, unpickled_tokenizer.sp_model)",
+        "type": "code",
+        "location": "/tests/test_tokenizer.py:244-246"
+    },
+    "227": {
+        "file_id": 13,
+        "content": "Code dumps and unpickles a tokenizer, then checks if the source and loaded tokenizers have the same sp_model.",
+        "type": "comment"
+    }
+}

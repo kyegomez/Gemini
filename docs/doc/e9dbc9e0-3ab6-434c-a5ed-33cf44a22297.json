@@ -1,0 +1,15 @@
+{
+    "summary": "The code snippets test the ImageToTextEmbeddings model in Gemini Torch library, verifying proper initialization and ensuring the output shape is (1, 128, 128) for different image sizes.",
+    "details": [
+        {
+            "comment": "This code snippet contains unit tests for the ImageToTextEmbeddings model in the Gemini Torch library. The model takes an image as input and returns a tensor of text embeddings, with fixed output shape (1, 128, 128). The tests ensure proper initialization of the model and check the output shapes when feeding images of different sizes (256x256, 512x512, 1024x1024).",
+            "location": "\"/media/root/Toshiba XG3/works/Gemini/docs/src/tests/test_img_encoder.py\":0-33",
+            "content": "import torch\nimport unittest\nfrom gemini_torch.utils import ImageToTextEmbeddings\nclass TestImageToTextEmbeddings(unittest.TestCase):\n    def setUp(self):\n        self.model = ImageToTextEmbeddings(\n            patches=16,\n            patch_size=16,\n            transformer_dim=512,\n            img_channels=3,\n            seq_len=128,\n            reduced_dim=128,\n        )\n    def test_initialization(self):\n        self.assertIsInstance(self.model, ImageToTextEmbeddings)\n    def test_forward_with_img_256(self):\n        img = torch.randn(1, 3, 256, 256)\n        output = self.model(img)\n        self.assertIsInstance(output, torch.Tensor)\n        self.assertEqual(output.shape, (1, 128, 128))\n    def test_forward_with_img_512(self):\n        img = torch.randn(1, 3, 512, 512)\n        output = self.model(img)\n        self.assertIsInstance(output, torch.Tensor)\n        self.assertEqual(output.shape, (1, 128, 128))\n    def test_forward_with_img_1024(self):\n        img = torch.randn(1, 3, 1024, 1024)\n        output = self.model(img)"
+        },
+        {
+            "comment": "This code snippet is testing the forward pass of a model with different image sizes. It ensures that the output tensor shape is (1, 128, 128) after passing an input image of size (3, 2048, 2048). The model's forward method is being tested in this context.",
+            "location": "\"/media/root/Toshiba XG3/works/Gemini/docs/src/tests/test_img_encoder.py\":34-45",
+            "content": "        self.assertIsInstance(output, torch.Tensor)\n        self.assertEqual(output.shape, (1, 128, 128))\n    def test_forward_with_img_2048(self):\n        img = torch.randn(1, 3, 2048, 2048)\n        output = self.model(img)\n        self.assertIsInstance(output, torch.Tensor)\n        self.assertEqual(output.shape, (1, 128, 128))\nif __name__ == \"__main__\":\n    unittest.main()"
+        }
+    ]
+}

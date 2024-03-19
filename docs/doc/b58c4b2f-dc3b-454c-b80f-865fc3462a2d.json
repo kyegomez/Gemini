@@ -1,0 +1,15 @@
+{
+    "summary": "The code is a PyProject configuration file using Poetry for dependency management, specifying package versions and configurations like ruff, types-toml, autopep8 options, and more for the Gemini-Torch project in Python 3.9.",
+    "details": [
+        {
+            "comment": "This code is a configuration file for the PyProject. It uses Poetry, a dependency management tool, to build and manage dependencies for the Gemini-Torch project. The project is written in Python 3.9. It depends on zetascale (1.5.8), Torch, Einops, Torchvision, Sentencepiece, and Pytest. Development dependencies may be added under [tool.poetry.dev-dependencies].",
+            "location": "\"/media/root/Toshiba XG3/works/Gemini/docs/src/pyproject.toml\":0-38",
+            "content": "[build-system]\nrequires = [\"poetry-core>=1.0.0\"]\nbuild-backend = \"poetry.core.masonry.api\"\n[tool.poetry]\nname = \"gemini-torch\"\nversion = \"0.1.2\"\ndescription = \"Gemini - Pytorch\"\nlicense = \"MIT\"\nauthors = [\"Kye Gomez <kye@apac.ai>\"]\nhomepage = \"https://github.com/kyegomez/Gemini\"\ndocumentation = \"https://github.com/kyegomez/Gemini\"  # Add this if you have documentation.\nreadme = \"README.md\"  # Assuming you have a README.md\nrepository = \"https://github.com/kyegomez/Gemini\"\nkeywords = [\"artificial intelligence\", \"deep learning\", \"optimizers\", \"Prompt Engineering\"]\nclassifiers = [\n    \"Development Status :: 4 - Beta\",\n    \"Intended Audience :: Developers\",\n    \"Topic :: Scientific/Engineering :: Artificial Intelligence\",\n    \"License :: OSI Approved :: MIT License\",\n    \"Programming Language :: Python :: 3.9\"\n]\n[tool.poetry.dependencies]\npython = \"^3.9\"\nzetascale = \"1.5.8\"\ntorch = \"*\"\neinops = \"*\"\ntorchvision = \"*\"\nsentencepiece = \"*\"\npytest = \"*\"\n[tool.poetry.dev-dependencies]\n# Add development dependencies here\n[tool.poetry.group.lint.dependencies]"
+        },
+        {
+            "comment": "This code specifies package versions and configurations for a Python project, including ruff, types-toml, types-redis, types-pytz, black, types-chardet, mypy-protobuf. It also sets autopep8 tool options for maximum line length, ignore list, in-place editing, recursive mode, and aggressive level.",
+            "location": "\"/media/root/Toshiba XG3/works/Gemini/docs/src/pyproject.toml\":39-53",
+            "content": "ruff = \"^0.1.6\"\ntypes-toml = \"^0.10.8.1\"\ntypes-redis = \"^4.3.21.6\"\ntypes-pytz = \"^2023.3.0.0\"\nblack = \"^23.1.0\"\ntypes-chardet = \"^5.0.4.6\"\nmypy-protobuf = \"^3.0.0\"\n[tool.autopep8]\nmax_line_length = 120\nignore = \"E501,W6\"  # or [\"E501\", \"W6\"]\nin-place = true\nrecursive = true\naggressive = 3"
+        }
+    ]
+}
