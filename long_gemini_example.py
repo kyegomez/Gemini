@@ -4,6 +4,7 @@ from gemini_torch import LongGemini
 # Text tokens
 x = torch.randint(0, 10000, (1, 1024))
 
+# Create an instance of the LongGemini model
 model = LongGemini(
     dim=512,  # Dimension of the input tensor
     depth=32,  # Number of transformer blocks
@@ -14,6 +15,8 @@ model = LongGemini(
     ring_seq_size=512,  # The size of the ring sequence
 )
 
-out = model(x)  # Apply the model to the input tensor
+# Apply the model to the input tensor
+out = model(x)
 
-print(out)  # Print the output tensor
+# Print the output tensor
+print(out)

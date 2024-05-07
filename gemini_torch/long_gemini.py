@@ -1,3 +1,4 @@
+import torch
 from ring_attention_pytorch import RingAttention
 from torch import Tensor, nn
 from zeta.nn import FeedForward, OutputHead
@@ -92,7 +93,7 @@ class LongGeminiTransformerBlock(nn.Module):
         x = self.norm(x)
 
         # Attention
-        x = self.attn(x)
+        x = self.attn(x) + x
 
         # Feedforward
         x = self.ffn(x) + x
@@ -170,6 +171,9 @@ class LongGemini(nn.Module):
         # Embedding layer for the model
         self.embed = nn.Embedding(num_tokens, dim)
 
+        # Norm
+        self.norm = nn.LayerNorm(dim)
+
     def forward(
         self,
         text: Tensor,
@@ -189,9 +193,12 @@ class LongGemini(nn.Module):
         """
         # Text embedding
         x = self.embed(text)
+        x = self.norm(x)
 
         # Apply the layers
         for layer in self.layers:
             x = layer(x)
+            x = self.norm(x)
 
         return self.output_head(x)
+
