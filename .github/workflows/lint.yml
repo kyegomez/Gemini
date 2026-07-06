@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out source repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: yaml Lint
         uses: ibiqlik/action-yamllint@v3
   flake8-lint:
@@ -18,12 +18,12 @@ jobs:
     name: flake8 Lint
     steps:
       - name: Check out source repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up Python environment
         uses: py-actions/flake8@v2
   ruff-lint:
     runs-on: ubuntu-latest
     name: ruff Lint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: chartboost/ruff-action@v1
